@@ -846,16 +846,22 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                 (m) => p.normalize(m.jsonFilePath) == jsonFilePath);
             modName = addedMod?.saveName;
 
-            // Optionally download all assets for this mod
+            // Optionally download all assets for this mod.
+            // Refresh the mod first so fileExists reflects the live
+            // existingAssetListsProvider state (it may have changed
+            // since addSingleMod built the initial asset lists).
             if (downloadAssets && addedMod != null) {
+              final freshMod = await ref
+                  .read(modsProvider.notifier)
+                  .updateSelectedMod(addedMod);
               ref.read(logProvider.notifier).addInfo(
-                  'Found mod with ${addedMod.assetCount} assets '
-                  '(${addedMod.missingAssetCount} missing) — starting asset download');
+                  'Starting asset download: ${freshMod.assetCount} assets, '
+                  '${freshMod.missingAssetCount} missing');
               state = state.copyWith(
                 statusMessage:
-                    'Downloading assets for "${addedMod.saveName}"...',
+                    'Downloading assets for "${freshMod.saveName}"...',
               );
-              await downloadAllFiles(addedMod);
+              await downloadAllFiles(freshMod);
             }
           } else {
             errorMessage = result;
