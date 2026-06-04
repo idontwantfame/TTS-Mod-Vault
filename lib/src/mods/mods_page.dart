@@ -18,6 +18,8 @@ import 'package:tts_mod_vault/src/mods/components/components.dart'
         CustomTooltip;
 import 'package:tts_mod_vault/src/mods/components/filter_button.dart'
     show FilterButton;
+import 'package:tts_mod_vault/src/logging/logging_console.dart'
+    show LoggingConsole;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         filteredModsProvider,
@@ -138,7 +140,7 @@ class ModsColumn extends ConsumerWidget {
             child: ModsView(),
           ),
         ),
-        //  LogPanel(),
+        const LoggingConsole(),
         BulkActionsProgressBar(),
       ],
     );
