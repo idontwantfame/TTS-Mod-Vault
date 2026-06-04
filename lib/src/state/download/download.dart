@@ -96,54 +96,33 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
   }
 
   // MARK: DL all files
-  Future<Set<String>> downloadAllFiles(Mod mod) async {
+  Future<Set<String>> downloadAllFiles(Mod mod, {bool force = false}) async {
     final totalMissing = mod.missingAssetCount;
     ref.read(logProvider.notifier).addInfo(
-        totalMissing > 0
-            ? 'Downloading $totalMissing asset${totalMissing == 1 ? '' : 's'} for: ${mod.saveName}'
-            : 'All assets already present for: ${mod.saveName}');
+        force
+            ? 'Force-downloading all ${mod.assetCount} assets for: ${mod.saveName}'
+            : totalMissing > 0
+                ? 'Downloading $totalMissing missing assets for: ${mod.saveName}'
+                : 'All assets already present for: ${mod.saveName}');
 
     final Set<String> allDownloaded = {};
 
-    allDownloaded.addAll(await downloadFiles(
-      modAssetListUrls: mod.assetLists.assetBundles
-          .where((e) => !e.fileExists)
-          .map((e) => e.url)
-          .toList(),
-      type: AssetTypeEnum.assetBundle,
-    ));
-
-    allDownloaded.addAll(await downloadFiles(
-      modAssetListUrls: mod.assetLists.audio
-          .where((e) => !e.fileExists)
-          .map((e) => e.url)
-          .toList(),
-      type: AssetTypeEnum.audio,
-    ));
-
-    allDownloaded.addAll(await downloadFiles(
-      modAssetListUrls: mod.assetLists.images
-          .where((e) => !e.fileExists)
-          .map((e) => e.url)
-          .toList(),
-      type: AssetTypeEnum.image,
-    ));
-
-    allDownloaded.addAll(await downloadFiles(
-      modAssetListUrls: mod.assetLists.models
-          .where((e) => !e.fileExists)
-          .map((e) => e.url)
-          .toList(),
-      type: AssetTypeEnum.model,
-    ));
-
-    allDownloaded.addAll(await downloadFiles(
-      modAssetListUrls: mod.assetLists.pdf
-          .where((e) => !e.fileExists)
-          .map((e) => e.url)
-          .toList(),
-      type: AssetTypeEnum.pdf,
-    ));
+    for (final (assets, type) in [
+      (mod.assetLists.assetBundles, AssetTypeEnum.assetBundle),
+      (mod.assetLists.audio, AssetTypeEnum.audio),
+      (mod.assetLists.images, AssetTypeEnum.image),
+      (mod.assetLists.models, AssetTypeEnum.model),
+      (mod.assetLists.pdf, AssetTypeEnum.pdf),
+    ]) {
+      final urls = force
+          ? assets.map((e) => e.url).toList()
+          : assets.where((e) => !e.fileExists).map((e) => e.url).toList();
+      allDownloaded.addAll(await downloadFiles(
+        modAssetListUrls: urls,
+        type: type,
+        force: force,
+      ));
+    }
 
     final downloaded = allDownloaded.length;
     ref.read(logProvider.notifier).addSuccess(
@@ -156,35 +135,8 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
   }
 
   // MARK: Force re-download all files
-  Future<Set<String>> redownloadAllFiles(Mod mod) async {
-    ref
-        .read(logProvider.notifier)
-        .addInfo('Force re-downloading all assets for: ${mod.saveName}');
-
-    final Set<String> allDownloaded = {};
-
-    for (final (urls, type) in [
-      (mod.assetLists.assetBundles.map((e) => e.url).toList(),
-          AssetTypeEnum.assetBundle),
-      (mod.assetLists.audio.map((e) => e.url).toList(), AssetTypeEnum.audio),
-      (mod.assetLists.images.map((e) => e.url).toList(), AssetTypeEnum.image),
-      (mod.assetLists.models.map((e) => e.url).toList(), AssetTypeEnum.model),
-      (mod.assetLists.pdf.map((e) => e.url).toList(), AssetTypeEnum.pdf),
-    ]) {
-      allDownloaded.addAll(await downloadFiles(
-        modAssetListUrls: urls,
-        type: type,
-        force: true,
-      ));
-    }
-
-    ref
-        .read(logProvider.notifier)
-        .addSuccess('Force re-download completed: ${mod.saveName}');
-
-    resetState();
-    return allDownloaded;
-  }
+  Future<Set<String>> redownloadAllFiles(Mod mod) =>
+      downloadAllFiles(mod, force: true);
 
   // MARK: Reset state
   void resetState() {
@@ -861,7 +813,7 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                 statusMessage:
                     'Downloading assets for "${freshMod.saveName}"...',
               );
-              await downloadAllFiles(freshMod);
+              await downloadAllFiles(freshMod, force: true);
             }
           } else {
             errorMessage = result;
