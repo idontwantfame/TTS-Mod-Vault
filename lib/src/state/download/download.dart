@@ -795,6 +795,7 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
   Future<String> downloadModsByIds({
     required List<String> modIds,
     required String targetDirectory,
+    bool downloadAssets = false,
   }) async {
     if (modIds.isEmpty) {
       return 'No mod IDs provided';
@@ -838,6 +839,15 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
             final addedMod =
                 mods.firstWhereOrNull((m) => m.jsonFilePath == jsonFilePath);
             modName = addedMod?.saveName;
+
+            // Optionally download all assets for this mod
+            if (downloadAssets && addedMod != null) {
+              state = state.copyWith(
+                statusMessage:
+                    'Downloading assets for "${addedMod.saveName}"...',
+              );
+              await downloadAllFiles(addedMod);
+            }
           } else {
             errorMessage = result;
           }

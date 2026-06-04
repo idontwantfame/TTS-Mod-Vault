@@ -18,13 +18,16 @@ class DownloadModsDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progress = ref.watch(downloadProvider).progress;
+    final downloadState = ref.watch(downloadProvider);
+    final progress = downloadState.progress;
+    final statusMessage = downloadState.statusMessage;
 
     // Depend only on progress and not boolean in order to not have download progress bar in selected mod view
     final isDownloading = useMemoized(() => progress > 0, [progress]);
     final textController = useTextEditingController();
     final targetDirectory =
         useState(p.normalize(ref.read(directoriesProvider).workshopDir));
+    final downloadAssets = useState(true);
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -44,15 +47,30 @@ class DownloadModsDialog extends HookConsumerWidget {
               TextField(
                 controller: textController,
                 cursorColor: Colors.black,
-                keyboardType: TextInputType.number,
                 style:
                     TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
                   fillColor: Colors.white,
                   border: OutlineInputBorder(),
-                  hintText: 'Enter mod ID(s) separated by comma',
+                  hintText:
+                      'Mod ID(s) or Workshop URLs, comma-separated',
                   hintStyle: TextStyle(color: Colors.black),
                 ),
+              ),
+              Row(
+                children: [
+                  Checkbox(
+                    visualDensity: VisualDensity.compact,
+                    value: downloadAssets.value,
+                    onChanged: isDownloading
+                        ? null
+                        : (v) => downloadAssets.value = v ?? true,
+                    checkColor: Colors.black,
+                    activeColor: Colors.white,
+                  ),
+                  const SizedBox(width: 4),
+                  const Text('Download all assets after downloading mod'),
+                ],
               ),
               Text(
                 'Save to: ${targetDirectory.value}',
@@ -106,14 +124,12 @@ class DownloadModsDialog extends HookConsumerWidget {
                         ? null
                         : () async {
                             final input = textController.text;
-                            if (input.isEmpty) {
-                              return;
-                            }
+                            if (input.isEmpty) return;
 
-                            // Parse mod IDs from input (comma separated)
+                            // Accept Workshop URLs or raw IDs, comma-separated
                             final modIds = input
                                 .split(',')
-                                .map((id) => id.trim())
+                                .map((s) => _extractModId(s.trim()))
                                 .where((id) => id.isNotEmpty)
                                 .toList();
 
@@ -124,6 +140,7 @@ class DownloadModsDialog extends HookConsumerWidget {
                                 .downloadModsByIds(
                                   modIds: modIds,
                                   targetDirectory: targetDirectory.value,
+                                  downloadAssets: downloadAssets.value,
                                 );
 
                             if (context.mounted) {
@@ -144,6 +161,9 @@ class DownloadModsDialog extends HookConsumerWidget {
                   spacing: 4,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    if (statusMessage != null)
+                      Text(statusMessage,
+                          style: const TextStyle(fontSize: 13)),
                     Stack(
                       children: [
                         LinearProgressIndicator(
@@ -173,4 +193,15 @@ class DownloadModsDialog extends HookConsumerWidget {
       ),
     );
   }
+}
+
+/// Extracts a Steam Workshop mod ID from either a raw ID string or a
+/// Workshop URL such as:
+///   https://steamcommunity.com/sharedfiles/filedetails/?id=953770080
+String _extractModId(String input) {
+  final uri = Uri.tryParse(input);
+  if (uri != null && uri.queryParameters.containsKey('id')) {
+    return uri.queryParameters['id']!;
+  }
+  return input;
 }
