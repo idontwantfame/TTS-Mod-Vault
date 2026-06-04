@@ -140,13 +140,35 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v4
+
       - uses: actions/download-artifact@v4
         with:
           merge-multiple: true
 
+      # Extract the section for this tag from CHANGELOG.md.
+      # Falls back to GitHub's auto-generated notes if no matching section exists.
+      - name: Extract changelog for this tag
+        id: changelog
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          # Match a section starting with ## [TAG] or ## TAG (with optional date)
+          NOTES=$(awk "/^## \[?${TAG//./\\.}\]?/{found=1; next} found && /^## /{exit} found{print}" CHANGELOG.md 2>/dev/null || true)
+          if [ -z "$NOTES" ]; then
+            echo "no_changelog=true" >> "$GITHUB_OUTPUT"
+          else
+            {
+              echo "notes<<EOF_CHANGELOG"
+              echo "$NOTES"
+              echo "EOF_CHANGELOG"
+            } >> "$GITHUB_OUTPUT"
+            echo "no_changelog=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: softprops/action-gh-release@v2
         with:
-          generate_release_notes: true
+          body: ${{ steps.changelog.outputs.no_changelog == 'false' && steps.changelog.outputs.notes || '' }}
+          generate_release_notes: ${{ steps.changelog.outputs.no_changelog == 'true' }}
           files: |
             tts-mod-vault-linux-x64.tar.gz
             tts-mod-vault-windows-x64.zip
