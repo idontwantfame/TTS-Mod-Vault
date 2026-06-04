@@ -18,6 +18,7 @@ class LoggingConsole extends HookConsumerWidget {
     final scrollController = useScrollController();
     final filterText = useState('');
     final filterController = useTextEditingController();
+    final visibleLevels = useState(LogLevel.values.toSet());
 
     // Auto-scroll to bottom on new entries
     useEffect(() {
@@ -35,12 +36,11 @@ class LoggingConsole extends HookConsumerWidget {
 
     if (!isVisible) return const SizedBox.shrink();
 
-    final filtered = filterText.value.isEmpty
-        ? entries
-        : entries
-            .where((e) =>
-                e.message.toLowerCase().contains(filterText.value.toLowerCase()))
-            .toList();
+    final filtered = entries.where((e) {
+      if (!visibleLevels.value.contains(e.level)) return false;
+      if (filterText.value.isEmpty) return true;
+      return e.message.toLowerCase().contains(filterText.value.toLowerCase());
+    }).toList();
 
     return Container(
       height: 280,
@@ -70,6 +70,41 @@ class LoggingConsole extends HookConsumerWidget {
                       fontSize: 14),
                 ),
                 const Spacer(),
+                // Severity filter chips
+                Wrap(
+                  spacing: 4,
+                  children: LogLevel.values.map((level) {
+                    final active = visibleLevels.value.contains(level);
+                    return GestureDetector(
+                      onTap: () {
+                        final next = Set<LogLevel>.from(visibleLevels.value);
+                        active ? next.remove(level) : next.add(level);
+                        visibleLevels.value = next;
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: active
+                              ? _levelColor(level)
+                              : Colors.transparent,
+                          border: Border.all(
+                              color: _levelColor(level), width: 1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          _levelText(level),
+                          style: TextStyle(
+                            color: active ? Colors.black : Colors.white,
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.copy, color: Colors.white, size: 16),
                   onPressed: () {

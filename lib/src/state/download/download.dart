@@ -97,9 +97,11 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
 
   // MARK: DL all files
   Future<Set<String>> downloadAllFiles(Mod mod) async {
-    ref
-        .read(logProvider.notifier)
-        .addInfo('Starting download for: ${mod.saveName}');
+    final totalMissing = mod.missingAssetCount;
+    ref.read(logProvider.notifier).addInfo(
+        totalMissing > 0
+            ? 'Downloading $totalMissing asset${totalMissing == 1 ? '' : 's'} for: ${mod.saveName}'
+            : 'All assets already present for: ${mod.saveName}');
 
     final Set<String> allDownloaded = {};
 
@@ -143,9 +145,11 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
       type: AssetTypeEnum.pdf,
     ));
 
-    ref
-        .read(logProvider.notifier)
-        .addSuccess('Download completed: ${mod.saveName}');
+    final downloaded = allDownloaded.length;
+    ref.read(logProvider.notifier).addSuccess(
+        downloaded > 0
+            ? 'Downloaded $downloaded asset${downloaded == 1 ? '' : 's'} for: ${mod.saveName}'
+            : 'No new assets needed for: ${mod.saveName}');
 
     resetState();
     return allDownloaded;
@@ -806,6 +810,7 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
         // isDownloading: true, // Commented out to not show download progress bar in selected mod view
         progress: 0.01,
         statusMessage: 'Downloading mods',
+        cancelledDownloads: false,
       );
 
       final downloadResults = <DownloadByIdResult>[];
@@ -843,6 +848,9 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
 
             // Optionally download all assets for this mod
             if (downloadAssets && addedMod != null) {
+              ref.read(logProvider.notifier).addInfo(
+                  'Found mod with ${addedMod.assetCount} assets '
+                  '(${addedMod.missingAssetCount} missing) — starting asset download');
               state = state.copyWith(
                 statusMessage:
                     'Downloading assets for "${addedMod.saveName}"...',
