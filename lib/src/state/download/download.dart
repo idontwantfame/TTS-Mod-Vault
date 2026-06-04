@@ -833,11 +833,12 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
 
           if (result.startsWith('Mod saved to:')) {
             success = true;
-            // Try to get the mod name from the newly added mod
-            final jsonFilePath = '$targetDirectory/$modId.json';
+            // Try to get the mod name from the newly added mod.
+            // Normalise both sides — addSingleMod stores p.normalize(path).
+            final jsonFilePath = p.normalize('$targetDirectory/$modId.json');
             final mods = ref.read(modsProvider.notifier).getAllMods();
-            final addedMod =
-                mods.firstWhereOrNull((m) => m.jsonFilePath == jsonFilePath);
+            final addedMod = mods.firstWhereOrNull(
+                (m) => p.normalize(m.jsonFilePath) == jsonFilePath);
             modName = addedMod?.saveName;
 
             // Optionally download all assets for this mod

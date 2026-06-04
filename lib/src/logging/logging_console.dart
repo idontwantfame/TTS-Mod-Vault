@@ -2,20 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:tts_mod_vault/src/state/logging/logging_state.dart';
-import 'package:tts_mod_vault/src/state/provider.dart' show loggingProvider;
+import 'package:tts_mod_vault/src/models/log_entry.dart' show LogLevel;
+import 'package:tts_mod_vault/src/state/provider.dart' show logProvider, loggingProvider;
 
+/// Panel shown at the bottom of the mods column.
+/// Visibility is toggled via [loggingProvider]; log data comes from [logProvider].
 class LoggingConsole extends HookConsumerWidget {
   const LoggingConsole({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final loggingState = ref.watch(loggingProvider);
+    final isVisible = ref.watch(loggingProvider.select((s) => s.isVisible));
+    final entries = ref.watch(logProvider);
     final loggingNotifier = ref.read(loggingProvider.notifier);
     final scrollController = useScrollController();
+    final filterText = useState('');
     final filterController = useTextEditingController();
 
-    // Auto-scroll to bottom when new logs are added
+    // Auto-scroll to bottom on new entries
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (scrollController.hasClients) {
@@ -27,14 +31,19 @@ class LoggingConsole extends HookConsumerWidget {
         }
       });
       return null;
-    }, [loggingState.entries.length]);
+    }, [entries.length]);
 
-    if (!loggingState.isVisible) {
-      return const SizedBox.shrink();
-    }
+    if (!isVisible) return const SizedBox.shrink();
+
+    final filtered = filterText.value.isEmpty
+        ? entries
+        : entries
+            .where((e) =>
+                e.message.toLowerCase().contains(filterText.value.toLowerCase()))
+            .toList();
 
     return Container(
-      height: 400,
+      height: 280,
       decoration: BoxDecoration(
         color: Colors.black.withValues(alpha: 0.9),
         border: Border.all(color: Colors.grey.shade600),
@@ -42,9 +51,9 @@ class LoggingConsole extends HookConsumerWidget {
       ),
       child: Column(
         children: [
-          // Header with controls
+          // Header
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             decoration: BoxDecoration(
               color: Colors.grey.shade800,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
@@ -54,143 +63,104 @@ class LoggingConsole extends HookConsumerWidget {
                 const Icon(Icons.terminal, color: Colors.white, size: 16),
                 const SizedBox(width: 8),
                 const Text(
-                  'Debug Console',
+                  'Activity Log',
                   style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14),
                 ),
                 const Spacer(),
-                // Level filter buttons
-                Wrap(
-                  spacing: 4,
-                  children: LogLevel.values.map((level) {
-                    final isActive = loggingState.visibleLevels.contains(level);
-                    return FilterChip(
-                      label: Text(
-                        level.name.toUpperCase(),
-                        style: TextStyle(
-                          color: isActive ? Colors.black : Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      selected: isActive,
-                      onSelected: (selected) {
-                        final newLevels = Set<LogLevel>.from(loggingState.visibleLevels);
-                        if (selected) {
-                          newLevels.add(level);
-                        } else {
-                          newLevels.remove(level);
-                        }
-                        loggingNotifier.setVisibleLevels(newLevels);
-                      },
-                      backgroundColor: Colors.transparent,
-                      selectedColor: _getLevelColor(level),
-                      side: BorderSide(color: _getLevelColor(level), width: 1),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(width: 8),
-                // Action buttons
                 IconButton(
                   icon: const Icon(Icons.copy, color: Colors.white, size: 16),
-                  onPressed: () => _copyLogsToClipboard(loggingState),
-                  tooltip: 'Copy logs to clipboard',
+                  onPressed: () {
+                    final text = entries.map((e) => e.fullLogLine).join('\n');
+                    Clipboard.setData(ClipboardData(text: text));
+                  },
+                  tooltip: 'Copy to clipboard',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
+                const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.clear, color: Colors.white, size: 16),
-                  onPressed: loggingNotifier.clearLogs,
-                  tooltip: 'Clear logs',
+                  onPressed: () => ref.read(logProvider.notifier).clear(),
+                  tooltip: 'Clear',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
+                const SizedBox(width: 8),
                 IconButton(
                   icon: const Icon(Icons.close, color: Colors.white, size: 16),
                   onPressed: loggingNotifier.toggleVisibility,
-                  tooltip: 'Close console',
+                  tooltip: 'Close',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
                 ),
               ],
             ),
           ),
-          // Filter bar
+          // Filter
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade900,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            color: Colors.grey.shade900,
             child: TextField(
               controller: filterController,
               style: const TextStyle(color: Colors.white, fontSize: 12),
               decoration: const InputDecoration(
-                hintText: 'Filter logs...',
+                hintText: 'Filter logs…',
                 hintStyle: TextStyle(color: Colors.grey),
                 prefixIcon: Icon(Icons.search, color: Colors.grey, size: 16),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                contentPadding:
+                    EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               ),
-              onChanged: loggingNotifier.setFilter,
+              onChanged: (v) => filterText.value = v,
             ),
           ),
-          // Log entries
+          // Entries
           Expanded(
             child: ListView.builder(
               controller: scrollController,
-              itemCount: loggingState.filteredEntries.length,
+              itemCount: filtered.length,
               itemBuilder: (context, index) {
-                final entry = loggingState.filteredEntries[index];
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                final entry = filtered[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 8, vertical: 2),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Timestamp
                       Text(
-                        entry.formattedTime,
+                        entry.formattedTimestamp,
                         style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 10,
-                          fontFamily: 'monospace',
-                        ),
+                            color: Colors.grey,
+                            fontSize: 10,
+                            fontFamily: 'monospace'),
                       ),
                       const SizedBox(width: 8),
-                      // Level badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4, vertical: 1),
                         decoration: BoxDecoration(
-                          color: entry.color,
+                          color: _levelColor(entry.level),
                           borderRadius: BorderRadius.circular(3),
                         ),
                         child: Text(
-                          entry.levelText,
+                          _levelText(entry.level),
                           style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                          ),
+                              color: Colors.black,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Category
-                      if (entry.category != null) ...[
-                        Text(
-                          '[${entry.category}]',
-                          style: const TextStyle(
-                            color: Colors.cyan,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                      ],
-                      // Message
                       Expanded(
                         child: Text(
                           entry.message,
                           style: TextStyle(
-                            color: entry.color,
-                            fontSize: 11,
-                            fontFamily: 'monospace',
-                          ),
+                              color: entry.color,
+                              fontSize: 11,
+                              fontFamily: 'monospace'),
                         ),
                       ),
                     ],
@@ -202,21 +172,14 @@ class LoggingConsole extends HookConsumerWidget {
           // Status bar
           Container(
             padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade800,
-            ),
+            color: Colors.grey.shade800,
             child: Row(
               children: [
                 Text(
-                  '${loggingState.filteredEntries.length} / ${loggingState.entries.length} entries',
-                  style: const TextStyle(color: Colors.grey, fontSize: 10),
+                  '${filtered.length} / ${entries.length} entries',
+                  style:
+                      const TextStyle(color: Colors.grey, fontSize: 10),
                 ),
-                const Spacer(),
-                if (loggingState.filterText != null && loggingState.filterText!.isNotEmpty)
-                  Text(
-                    'Filtered by: "${loggingState.filterText}"',
-                    style: const TextStyle(color: Colors.yellow, fontSize: 10),
-                  ),
               ],
             ),
           ),
@@ -225,42 +188,29 @@ class LoggingConsole extends HookConsumerWidget {
     );
   }
 
-  Color _getLevelColor(LogLevel level) {
+  Color _levelColor(LogLevel level) {
     switch (level) {
-      case LogLevel.info:
+      case LogLevel.success:
         return Colors.green;
       case LogLevel.warning:
         return Colors.orange;
       case LogLevel.error:
         return Colors.red;
-      case LogLevel.debug:
-        return Colors.grey;
-      case LogLevel.network:
-        return Colors.blue;
+      case LogLevel.info:
+        return Colors.blueGrey;
     }
   }
 
-  void _copyLogsToClipboard(LoggingState loggingState) {
-    final logs = loggingState.filteredEntries.map((e) => e.toString()).join('\n');
-    Clipboard.setData(ClipboardData(text: logs));
-  }
-}
-
-class LoggingToggleButton extends ConsumerWidget {
-  const LoggingToggleButton({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final loggingState = ref.watch(loggingProvider);
-    final loggingNotifier = ref.read(loggingProvider.notifier);
-
-    return IconButton(
-      icon: Icon(
-        Icons.terminal,
-        color: loggingState.isVisible ? Colors.cyan : Colors.grey,
-      ),
-      onPressed: loggingNotifier.toggleVisibility,
-      tooltip: loggingState.isVisible ? 'Hide Debug Console' : 'Show Debug Console',
-    );
+  String _levelText(LogLevel level) {
+    switch (level) {
+      case LogLevel.success:
+        return 'OK';
+      case LogLevel.warning:
+        return 'WARN';
+      case LogLevel.error:
+        return 'ERR';
+      case LogLevel.info:
+        return 'INFO';
+    }
   }
 }
