@@ -117,9 +117,9 @@ class LoggingConsole extends HookConsumerWidget {
                 ),
                 const SizedBox(width: 8),
                 IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.white, size: 16),
+                  icon: const Icon(Icons.delete_sweep, color: Colors.white, size: 16),
                   onPressed: () => ref.read(logProvider.notifier).clear(),
-                  tooltip: 'Clear',
+                  tooltip: 'Clear log',
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                 ),

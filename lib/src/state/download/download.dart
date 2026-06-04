@@ -1,5 +1,5 @@
 import 'dart:convert' show JsonEncoder, json;
-import 'dart:io' show File, FileMode, HttpClient, RandomAccessFile;
+import 'dart:io' show Directory, File, FileMode, HttpClient, RandomAccessFile;
 
 import 'package:bson/bson.dart' show BsonBinary, BsonCodec;
 import 'package:dio/dio.dart'
@@ -225,6 +225,8 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
           final fileName = getFileNameFromURL(originalUrl);
           final directory =
               ref.read(directoriesProvider.notifier).getDirectoryByType(type);
+          // Ensure the target directory exists before writing
+          await Directory(directory).create(recursive: true);
           final tempPath = p.join(directory, '${fileName}_temp');
 
           // Set url and cancel token
@@ -302,11 +304,13 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
 
             // Handle cancellation specifically
             if (e is DioException && e.type == DioExceptionType.cancel) {
-              debugPrint('Download cancelled for $url');
               return; // Don't treat cancellation as an error
             }
 
-            debugPrint('Error occurred while downloading files: $e');
+            debugPrint('Download error for $url: $e');
+            ref
+                .read(logProvider.notifier)
+                .addWarning('Download failed: $url\n$e');
           }
         }));
 
