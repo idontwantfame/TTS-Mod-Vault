@@ -104,9 +104,13 @@ class ModsListItem extends HookConsumerWidget {
 
             ref.read(multiModsProvider.notifier).state = newSelected;
           } else {
-            // Normal left-click: Single selection
+            // Normal left-click: toggle panel if this mod is already selected
+            final alreadySelected = ref.read(multiModsProvider).length == 1 &&
+                ref.read(multiModsProvider).contains(mod.jsonFilePath);
+            final panelOpen = ref.read(detailPanelExpandedProvider);
             ref.read(modsProvider.notifier).setSelectedMod(mod);
-            ref.read(detailPanelExpandedProvider.notifier).state = true;
+            ref.read(detailPanelExpandedProvider.notifier).state =
+                !(alreadySelected && panelOpen);
           }
         }
       },
