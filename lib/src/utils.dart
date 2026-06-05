@@ -66,69 +66,6 @@ You can enter multiple old prefixes by separating them with the | pipe symbol
 For example: http://pastebin.com/raw.php?i=|http://pastebin.com/raw/|http://pastebin.com/
 There must be exactly one new prefix, for example: https://pastebin.com/raw/''';
 
-final ThemeData darkTheme = ThemeData(
-  brightness: Brightness.dark,
-  primaryColor: Colors.black,
-  scaffoldBackgroundColor: Color(0xFF141218),
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.black,
-    foregroundColor: Colors.white,
-  ),
-  colorScheme: ColorScheme.dark(
-    primary: Colors.black,
-    secondary: Colors.white,
-    error: Colors.red,
-    tertiary: Colors.blue,
-  ),
-  textTheme: TextTheme(
-    bodyLarge: TextStyle(color: Colors.white),
-    bodyMedium: TextStyle(color: Colors.white),
-    bodySmall: TextStyle(color: Colors.white),
-  ),
-  iconTheme: IconThemeData(color: Colors.white),
-  floatingActionButtonTheme: FloatingActionButtonThemeData(
-    backgroundColor: Colors.red,
-    foregroundColor: Colors.white,
-  ),
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black,
-    ),
-  ),
-  outlinedButtonTheme: OutlinedButtonThemeData(
-    style: OutlinedButton.styleFrom(
-      foregroundColor: Colors.white,
-      side: BorderSide(color: Colors.white),
-    ),
-  ),
-  textButtonTheme: TextButtonThemeData(
-    style: TextButton.styleFrom(foregroundColor: Colors.blue),
-  ),
-  navigationRailTheme: NavigationRailThemeData(
-    selectedIconTheme: IconThemeData(color: Colors.black),
-    unselectedIconTheme: IconThemeData(color: Colors.white),
-    selectedLabelTextStyle: TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-    ),
-    unselectedLabelTextStyle: TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-    ),
-  ),
-  inputDecorationTheme: InputDecorationTheme(
-    filled: true,
-    fillColor: Colors.black87,
-    focusedBorder:
-        OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-    enabledBorder:
-        OutlineInputBorder(borderSide: BorderSide(color: Colors.white70)),
-    labelStyle: TextStyle(color: Colors.white),
-    hintStyle: TextStyle(color: Colors.white60),
-  ),
-);
-
 final _nonAlphanumericRegex = RegExp(r'[^a-zA-Z0-9]');
 
 String getFileNameFromURL(String url) {
