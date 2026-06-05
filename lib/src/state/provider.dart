@@ -34,6 +34,9 @@ import 'package:tts_mod_vault/src/state/sort_and_filter/sort_and_filter_state.da
 import 'package:tts_mod_vault/src/state/logging/logging.dart';
 import 'package:tts_mod_vault/src/state/logging/logging_state.dart' show LoggingState;
 import 'package:tts_mod_vault/src/state/storage/storage.dart';
+import 'package:tts_mod_vault/src/ui/theme/app_theme_id.dart';
+import 'package:tts_mod_vault/src/ui/theme/app_theme.dart';
+import 'package:tts_mod_vault/src/ui/theme/app_theme_provider.dart';
 
 enum AppPage { mods, backups }
 
@@ -360,4 +363,25 @@ final filteredModsProvider = Provider<List<Mod>>((ref) {
   }
 
   return filteredMods;
+});
+
+final appThemeProvider =
+    StateNotifierProvider<AppThemeNotifier, AppThemeId>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.appThemeIdKey);
+  final initial = saved != null
+      ? AppThemeId.values.firstWhere((e) => e.name == saved,
+          orElse: () => AppThemeId.purpleDark)
+      : AppThemeId.purpleDark;
+  return AppThemeNotifier(initial);
+});
+
+final appThemeDataProvider = Provider<AppThemeData>((ref) {
+  final id = ref.watch(appThemeProvider);
+  return AppThemeData.forId(id);
+});
+
+final appThemePersistProvider = Provider<void>((ref) {
+  ref.listen<AppThemeId>(appThemeProvider, (_, next) {
+    ref.read(storageProvider).saveUiPref(Storage.appThemeIdKey, next.name);
+  });
 });
