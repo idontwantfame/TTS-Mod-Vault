@@ -66,4 +66,5 @@ flutter:
 
   assets:
     - .env
+    - CHANGELOG.md
     - assets/icon/
