@@ -233,6 +233,8 @@ class LoggingConsole extends HookConsumerWidget {
         return Colors.red;
       case LogLevel.info:
         return Colors.blueGrey;
+      case LogLevel.debug:
+        return Colors.grey;
     }
   }
 
@@ -246,6 +248,8 @@ class LoggingConsole extends HookConsumerWidget {
         return 'ERR';
       case LogLevel.info:
         return 'INFO';
+      case LogLevel.debug:
+        return 'DBG';
     }
   }
 }

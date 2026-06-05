@@ -27,6 +27,11 @@ class LogNotifier extends StateNotifier<List<LogEntry>> {
     _addEntry(LogEntry(message: message, level: LogLevel.error));
   }
 
+  /// Add a debug-level log entry
+  void addDebug(String message) {
+    _addEntry(LogEntry(message: message, level: LogLevel.debug));
+  }
+
   /// Add a log entry to the list, maintaining max entry limit
   void _addEntry(LogEntry entry) {
     final newState = [...state, entry];

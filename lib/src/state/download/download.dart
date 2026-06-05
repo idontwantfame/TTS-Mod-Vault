@@ -3,7 +3,7 @@ import 'dart:io' show Directory, File, FileMode, HttpClient, RandomAccessFile;
 
 import 'package:bson/bson.dart' show BsonBinary, BsonCodec;
 import 'package:dio/dio.dart'
-    show BaseOptions, CancelToken, Dio, DioException, DioExceptionType, Options;
+    show BaseOptions, CancelToken, Dio, DioException, DioExceptionType, InterceptorsWrapper, Options;
 import 'package:dio/io.dart' show IOHttpClientAdapter;
 import 'package:fixnum/fixnum.dart' show Int64;
 import 'package:flutter/foundation.dart' show kDebugMode;
@@ -51,14 +51,38 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
       : dio = Dio(BaseOptions(connectTimeout: const Duration(seconds: 15))),
         super(const DownloadState()) {
     _configureProxy();
+    _addHttpLogger();
+  }
+
+  void _addHttpLogger() {
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          ref.read(logProvider.notifier).addDebug(
+              '→ ${options.method} ${options.uri}');
+          handler.next(options);
+        },
+        onResponse: (response, handler) {
+          ref.read(logProvider.notifier).addDebug(
+              '← ${response.statusCode} ${response.requestOptions.uri}');
+          handler.next(response);
+        },
+        onError: (error, handler) {
+          ref.read(logProvider.notifier).addDebug(
+              '✗ ${error.requestOptions.uri} — ${error.message}');
+          handler.next(error);
+        },
+      ),
+    );
   }
 
   void _configureProxy() {
-    final proxyUrl = ref.read(settingsProvider).proxyUrl;
+    final proxyUrl = ref.read(settingsProvider).proxyUrl.trim();
     (dio.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
       final client = HttpClient();
       if (proxyUrl.isNotEmpty) {
-        client.findProxy = (uri) => 'PROXY $proxyUrl';
+        final pacEntry = _proxyToPacEntry(proxyUrl);
+        client.findProxy = (uri) => pacEntry;
       } else {
         client.findProxy = null;
       }
@@ -66,8 +90,49 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     };
   }
 
+  /// Converts a user-entered proxy URL to a PAC-file entry string.
+  ///
+  /// Supports:
+  ///   http://host:port   → "PROXY host:port"
+  ///   https://host:port  → "PROXY host:port"
+  ///   socks5://host:port → "SOCKS5 host:port"
+  ///   socks4://host:port → "SOCKS host:port"
+  ///   host:port          → "PROXY host:port"  (plain, assume HTTP)
+  static String _proxyToPacEntry(String proxyUrl) {
+    final lower = proxyUrl.toLowerCase();
+    if (lower.startsWith('socks5://')) {
+      final hostPort = proxyUrl.substring('socks5://'.length);
+      return 'SOCKS5 $hostPort';
+    }
+    if (lower.startsWith('socks4://') || lower.startsWith('socks://')) {
+      final hostPort = proxyUrl.replaceFirst(RegExp(r'^socks[0-9]*://', caseSensitive: false), '');
+      return 'SOCKS $hostPort';
+    }
+    // http://, https://, or bare host:port — all treated as HTTP CONNECT proxy
+    final hostPort = proxyUrl.replaceFirst(RegExp(r'^https?://', caseSensitive: false), '');
+    return 'PROXY $hostPort';
+  }
+
   void updateProxySettings() {
     _configureProxy();
+  }
+
+  Future<String> testConnection() async {
+    try {
+      final response = await dio.get(
+        'https://steamcommunity.com',
+        options: Options(
+          sendTimeout: const Duration(seconds: 10),
+          receiveTimeout: const Duration(seconds: 10),
+          validateStatus: (s) => s != null && s < 600,
+        ),
+      );
+      final proxy = ref.read(settingsProvider).proxyUrl;
+      final via = proxy.isNotEmpty ? ' via proxy $proxy' : '';
+      return 'OK — ${response.statusCode}$via';
+    } catch (e) {
+      return 'Failed: $e';
+    }
   }
 
   // MARK: Cancel DL button
@@ -818,6 +883,14 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                     'Downloading assets for "${freshMod.saveName}"...',
               );
               await downloadAllFiles(freshMod, force: true);
+              // Rescan asset dirs from disk (same as what restart does),
+              // then rebuild the mod so fileExists turns green in the UI.
+              await ref
+                  .read(existingAssetListsProvider.notifier)
+                  .loadExistingAssetsLists();
+              await ref
+                  .read(modsProvider.notifier)
+                  .updateSelectedMod(freshMod);
             }
           } else {
             errorMessage = result;

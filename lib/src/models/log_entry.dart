@@ -6,6 +6,7 @@ enum LogLevel {
   success,
   warning,
   error,
+  debug,
 }
 
 class LogEntry {
@@ -30,6 +31,8 @@ class LogEntry {
         return Colors.yellow.shade700;
       case LogLevel.error:
         return Colors.red;
+      case LogLevel.debug:
+        return Colors.grey;
     }
   }
 

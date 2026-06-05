@@ -19,6 +19,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         directoriesProvider,
+        downloadProvider,
         modsProvider,
         multiModsProvider,
         selectedModTypeProvider,
@@ -1023,7 +1024,7 @@ class SettingsInterfaceColumn extends StatelessWidget {
   }
 }
 
-class SettingsNetworkColumn extends StatelessWidget {
+class SettingsNetworkColumn extends HookConsumerWidget {
   const SettingsNetworkColumn({
     super.key,
     required this.textFieldController,
@@ -1044,7 +1045,10 @@ class SettingsNetworkColumn extends StatelessWidget {
   final ValueNotifier<String> proxyUrl;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final proxyTestResult = useState<String?>(null);
+    final proxyTesting = useState(false);
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1147,7 +1151,47 @@ class SettingsNetworkColumn extends StatelessWidget {
             focusNode: proxyTextFieldFocusNode,
             onChanged: (value) {
               proxyUrl.value = value;
+              proxyTestResult.value = null;
             },
+          ),
+          SizedBox(height: 8),
+          Row(
+            spacing: 8,
+            children: [
+              ElevatedButton.icon(
+                onPressed: proxyTesting.value
+                    ? null
+                    : () async {
+                        proxyTesting.value = true;
+                        proxyTestResult.value = null;
+                        final result = await ref
+                            .read(downloadProvider.notifier)
+                            .testConnection();
+                        proxyTestResult.value = result;
+                        proxyTesting.value = false;
+                      },
+                icon: proxyTesting.value
+                    ? SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(Icons.wifi_tethering),
+                label: Text('Test connection'),
+              ),
+              if (proxyTestResult.value != null)
+                Expanded(
+                  child: Text(
+                    proxyTestResult.value!,
+                    style: TextStyle(
+                      color: proxyTestResult.value!.startsWith('OK')
+                          ? Colors.green
+                          : Colors.red,
+                      fontSize: 13,
+                    ),
+                  ),
+                ),
+            ],
           ),
         ],
       ),
