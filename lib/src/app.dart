@@ -16,8 +16,8 @@ class App extends ConsumerWidget {
 
     return MaterialApp(
       title: 'TTS Mod Vault',
-      theme: themeData.toMaterialTheme(),
-      themeMode: ThemeMode.light,
+      darkTheme: themeData.toMaterialTheme(),
+      themeMode: ThemeMode.dark,
       initialRoute: '/',
       routes: {
         '/': (context) => const SplashPage(),

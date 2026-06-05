@@ -381,6 +381,7 @@ final appThemeDataProvider = Provider<AppThemeData>((ref) {
 });
 
 final appThemePersistProvider = Provider<void>((ref) {
+  ref.keepAlive();
   ref.listen<AppThemeId>(appThemeProvider, (_, next) {
     ref.read(storageProvider).saveUiPref(Storage.appThemeIdKey, next.name);
   });
