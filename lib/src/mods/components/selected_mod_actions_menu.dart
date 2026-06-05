@@ -100,12 +100,12 @@ class SelectedModActionsMenu extends HookConsumerWidget {
           tier: AppTooltipTier.complex,
           child: MenuItemButton(
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
             ),
-            leadingIcon: Icon(Icons.refresh, color: Colors.black),
+            leadingIcon: Icon(Icons.refresh, color: t.textSecondary),
             child: Text('Re-download all assets',
-                style: TextStyle(color: Colors.black)),
+                style: TextStyle(color: t.textPrimary)),
             onPressed: () async {
               if (actionInProgress) return;
 
