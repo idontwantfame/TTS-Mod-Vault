@@ -1,5 +1,3 @@
-import 'dart:io' show File;
-
 import 'package:flutter/gestures.dart'
     show PointerDeviceKind, kPrimaryButton, kSecondaryButton;
 import 'package:flutter/material.dart';
@@ -9,194 +7,145 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/mods/components/components.dart'
     show CustomTooltip;
+import 'package:tts_mod_vault/src/mods/components/mod_thumbnail.dart'
+    show ModThumbnail;
 import 'package:tts_mod_vault/src/state/backup/backup_status_enum.dart'
     show ExistingBackupStatusEnum;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart'
-    show AudioAssetVisibility, Mod, ModTypeEnum;
+    show Mod;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
+        modListDensityProvider,
+        ModListDensity,
         modsProvider,
-        settingsProvider,
         multiModsProvider;
-import 'package:tts_mod_vault/src/utils.dart'
-    show showModContextMenu, formatTimestamp;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppBadge, AppBadgeVariant, AppCard;
+import 'package:tts_mod_vault/src/utils.dart' show showModContextMenu;
 
 class ModsListItem extends HookConsumerWidget {
   final Mod mod;
 
   const ModsListItem({super.key, required this.mod});
 
+  double _densityPadding(WidgetRef ref) {
+    final density = ref.watch(modListDensityProvider);
+    return switch (density) {
+      ModListDensity.compact => 6.0,
+      ModListDensity.defaultDensity => 10.0,
+      ModListDensity.comfortable => 14.0,
+    };
+  }
+
+  Widget _modBadge(Mod mod) {
+    if (mod.missingAssetCount > 0) {
+      return AppBadge(
+        label: '${mod.missingAssetCount} missing',
+        variant: AppBadgeVariant.error,
+      );
+    }
+    if (mod.backupStatus == ExistingBackupStatusEnum.upToDate) {
+      return const AppBadge(label: '✓ backed up', variant: AppBadgeVariant.ok);
+    }
+    if (mod.assetCount > 0) {
+      return const AppBadge(
+          label: '✓ all assets', variant: AppBadgeVariant.ok);
+    }
+    return const AppBadge(label: 'no assets', variant: AppBadgeVariant.neutral);
+  }
+
+  String _relativeDate(int? msEpoch) {
+    if (msEpoch == null) return '';
+    final dt = DateTime.fromMillisecondsSinceEpoch(msEpoch);
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays > 30) return '${(diff.inDays / 30).floor()}mo ago';
+    if (diff.inDays > 0) return '${diff.inDays}d ago';
+    if (diff.inHours > 0) return '${diff.inHours}h ago';
+    return 'today';
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final showBackupState = ref.watch(settingsProvider).showBackupState;
+    final t = ref.watch(appThemeDataProvider);
     final multiSelectMods = ref.watch(multiModsProvider);
-
-    final imageExists = useMemoized(() {
-      return mod.imageFilePath != null
-          ? File(mod.imageFilePath!).existsSync()
-          : false;
-    }, [mod.imageFilePath]);
 
     final isSelected = useMemoized(() {
       return multiSelectMods.contains(mod.jsonFilePath);
     }, [multiSelectMods, mod]);
 
-    final filesMessage = useMemoized(() {
-      final missingCount = mod.missingAssetCount;
-      if (missingCount <= 0) return '';
-      final fileLabel = missingCount == 1 ? 'file' : 'files';
-      return '$missingCount missing $fileLabel';
-    }, [mod.existingAssetCount]);
-
-    final backupStatusColor = useMemoized(
-      () => switch (mod.backupStatus) {
-        ExistingBackupStatusEnum.upToDate => Colors.green,
-        ExistingBackupStatusEnum.outOfDate => Colors.red,
-        ExistingBackupStatusEnum.assetCountMismatch => Colors.yellow,
-        ExistingBackupStatusEnum.noBackup => Colors.black,
-      },
-      [mod.backupStatus],
-    );
-
     return Listener(
-        onPointerDown: (event) {
-          if (ref.read(actionInProgressProvider)) {
-            return;
-          }
+      onPointerDown: (event) {
+        if (ref.read(actionInProgressProvider)) {
+          return;
+        }
 
-          final isCtrlPressed = event.kind == PointerDeviceKind.mouse &&
-              (event.buttons == kPrimaryButton) &&
-              (HardwareKeyboard.instance.isControlPressed ||
-                  HardwareKeyboard.instance.isMetaPressed);
+        final isCtrlPressed = event.kind == PointerDeviceKind.mouse &&
+            (event.buttons == kPrimaryButton) &&
+            (HardwareKeyboard.instance.isControlPressed ||
+                HardwareKeyboard.instance.isMetaPressed);
 
-          if (event.buttons == kSecondaryButton) {
-            // Right-click
-            ref.read(modsProvider.notifier).setSelectedMod(mod);
-            showModContextMenu(context, ref, event.position, mod);
-          } else if (event.buttons == kPrimaryButton) {
-            // Left-click
-            if (isCtrlPressed) {
-              // Ctrl+Click: Toggle multi-selection
-              final currentSelected = ref.read(multiModsProvider);
-              final newSelected = Set<String>.from(currentSelected);
+        if (event.buttons == kSecondaryButton) {
+          // Right-click
+          ref.read(modsProvider.notifier).setSelectedMod(mod);
+          showModContextMenu(context, ref, event.position, mod);
+        } else if (event.buttons == kPrimaryButton) {
+          // Left-click
+          if (isCtrlPressed) {
+            // Ctrl+Click: Toggle multi-selection
+            final currentSelected = ref.read(multiModsProvider);
+            final newSelected = Set<String>.from(currentSelected);
 
-              if (newSelected.contains(mod.jsonFilePath)) {
-                newSelected.remove(mod.jsonFilePath);
-              } else {
-                newSelected.add(mod.jsonFilePath);
-              }
-
-              ref.read(multiModsProvider.notifier).state = newSelected;
+            if (newSelected.contains(mod.jsonFilePath)) {
+              newSelected.remove(mod.jsonFilePath);
             } else {
-              // Normal left-click: Single selection
-              ref.read(modsProvider.notifier).setSelectedMod(mod);
+              newSelected.add(mod.jsonFilePath);
             }
+
+            ref.read(multiModsProvider.notifier).state = newSelected;
+          } else {
+            // Normal left-click: Single selection
+            ref.read(modsProvider.notifier).setSelectedMod(mod);
           }
-        },
-        child: Card(
-          margin: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          color: Colors.grey[850],
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-            side: BorderSide(
-              color: isSelected ? Colors.white : Colors.transparent,
-              width: 2,
-            ),
-          ),
-          child: Row(
-            spacing: 8,
-            children: [
-              if (imageExists)
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: Image.file(
-                    File(mod.imageFilePath!),
-                    width: 64,
-                    height: 64,
-                    fit: BoxFit.fitHeight,
-                    cacheHeight: 64,
-                    cacheWidth: 64,
+        }
+      },
+      child: AppCard(
+        selected: isSelected,
+        padding: EdgeInsets.symmetric(
+          horizontal: 10,
+          vertical: _densityPadding(ref),
+        ),
+        child: Row(
+          children: [
+            ModThumbnail(imagePath: mod.imageFilePath, size: 32),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    mod.saveName,
+                    style: TextStyle(
+                      color: t.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                )
-              else
-                Container(
-                  color: Colors.grey,
-                  width: 64,
-                  height: 64,
-                  child: Icon(Icons.image, size: 64),
-                ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      mod.modType != ModTypeEnum.save
-                          ? (mod.saveName.isNotEmpty
-                              ? mod.saveName
-                              : mod.jsonFileName)
-                          : "${mod.saveName} - ${mod.jsonFileName}",
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      spacing: 4,
-                      children: [
-                        CustomTooltip(
-                          waitDuration: Duration(milliseconds: 300),
-                          message: filesMessage,
-                          child: Text(
-                            "${mod.existingAssetCount}/${mod.assetCount}",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w500,
-                              color: mod.existingAssetCount == mod.assetCount
-                                  ? Colors.green
-                                  : Colors.white,
-                            ),
-                          ),
-                        ),
-                        if (mod.audioVisibility !=
-                            AudioAssetVisibility.useGlobalSetting)
-                          CustomTooltip(
-                            waitDuration: Duration(milliseconds: 300),
-                            message: mod.audioVisibility ==
-                                    AudioAssetVisibility.alwaysShow
-                                ? 'Override: Show audio assets'
-                                : 'Override: hide audio assets',
-                            child: Icon(
-                              mod.audioVisibility ==
-                                      AudioAssetVisibility.alwaysShow
-                                  ? Icons.volume_up
-                                  : Icons.volume_off,
-                              size: 28,
-                              color: Colors.blue,
-                            ),
-                          ),
-                        if (mod.backup != null && showBackupState)
-                          CustomTooltip(
-                            waitDuration: Duration(milliseconds: 300),
-                            message:
-                                'Update: ${formatTimestamp(mod.dateTimeStamp) ?? 'N/A'}\n'
-                                'Backup: ${formatTimestamp(mod.backup!.lastModifiedTimestamp.toString())}'
-                                '${mod.backupStatus == ExistingBackupStatusEnum.upToDate ? '' : '\n\nBackup asset files count: ${mod.backup!.totalAssetCount}\nExisting asset files count: ${mod.existingAssetCount}'}',
-                            child: Icon(
-                              Icons.folder_zip_outlined,
-                              size: 28,
-                              color: backupStatusColor,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ],
-                ),
+                  Text(
+                    '${mod.assetCount} assets · ${_relativeDate(mod.lastModifiedTimestamp)}',
+                    style: TextStyle(color: t.textMuted, fontSize: 11),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ));
+            ),
+            const SizedBox(width: 8),
+            _modBadge(mod),
+          ],
+        ),
+      ),
+    );
   }
 }
