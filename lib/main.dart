@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart' show dotenv;
 import 'package:hive_ce_flutter/hive_flutter.dart' show Hive, HiveX;
 import 'package:hooks_riverpod/hooks_riverpod.dart' show ProviderScope;
+import 'package:package_info_plus/package_info_plus.dart' show PackageInfo;
 import 'package:window_manager/window_manager.dart'
     show WindowOptions, windowManager;
 
@@ -16,9 +17,11 @@ void main() async {
 
   await Hive.initFlutter('TTS Mod Vault');
 
-  WindowOptions windowOptions = const WindowOptions(
-    minimumSize: Size(854, 480),
-    title: 'TTS Mod Vault 3.0.1',
+  final packageInfo = await PackageInfo.fromPlatform();
+
+  WindowOptions windowOptions = WindowOptions(
+    minimumSize: const Size(854, 480),
+    title: 'TTS Mod Vault ${packageInfo.version}',
     center: true,
   );
 
