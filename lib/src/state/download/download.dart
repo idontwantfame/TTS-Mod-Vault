@@ -7,7 +7,6 @@ import 'package:dio/dio.dart'
     show BaseOptions, CancelToken, Dio, DioException, DioExceptionType, InterceptorsWrapper, Options;
 import 'package:dio/io.dart' show IOHttpClientAdapter;
 import 'package:fixnum/fixnum.dart' show Int64;
-import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart' show debugPrint;
 import 'package:hooks_riverpod/hooks_riverpod.dart' show Ref, StateNotifier;
 import 'package:http/http.dart' as http;
@@ -255,7 +254,7 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     CancelToken cancelToken,
     int batchLength,
   ) async {
-    var _lastProgressMs = 0;
+    var lastProgressMs = 0;
     await dio.download(
       url,
       tempPath,
@@ -264,8 +263,8 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
       onReceiveProgress: (received, total) {
         if (total <= 0 || batchLength > 1) return;
         final now = DateTime.now().millisecondsSinceEpoch;
-        if (now - _lastProgressMs < 100) return;
-        _lastProgressMs = now;
+        if (now - lastProgressMs < 100) return;
+        lastProgressMs = now;
         state = state.copyWith(progress: received / total);
       },
     );
@@ -1213,29 +1212,6 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
       await raf.writeString(content);
     } finally {
       await raf.close();
-    }
-  }
-
-  // MARK: JSON issues
-  /// Recursively finds and logs problematic values (Infinity, NaN) in decoded BSON data
-  void _findProblematicValues(dynamic data, String path) {
-    if (data is Map) {
-      for (final entry in data.entries) {
-        final newPath =
-            path.isEmpty ? entry.key.toString() : '$path.${entry.key}';
-        _findProblematicValues(entry.value, newPath);
-      }
-    } else if (data is List) {
-      for (int i = 0; i < data.length; i++) {
-        _findProblematicValues(data[i], '$path[$i]');
-      }
-    } else if (data is double) {
-      if (data.isInfinite) {
-        debugPrint(
-            '_findProblematicValues - Found Infinity at path: $path (value: $data)');
-      } else if (data.isNaN) {
-        debugPrint('_findProblematicValues - Found NaN at path: $path');
-      }
     }
   }
 
