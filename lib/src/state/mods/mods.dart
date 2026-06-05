@@ -44,6 +44,7 @@ import 'package:tts_mod_vault/src/state/provider.dart'
         existingAssetListsProvider,
         existingBackupsProvider,
         loadingMessageProvider,
+        logProvider,
         settingsProvider,
         sortAndFilterProvider,
         refreshingSharedAssetsProvider,
@@ -349,8 +350,19 @@ class ModsStateNotifier extends AsyncNotifier<ModsState> {
       }
 
       final endTime = DateTime.now();
+      final totalElapsed = endTime.difference(startTime);
       debugPrint('loadModsData END: $endTime');
-      debugPrint('loadModsData total time: ${endTime.difference(startTime)}');
+      debugPrint('loadModsData total time: $totalElapsed');
+
+      if (state.hasValue) {
+        final data = state.value!;
+        final total = data.mods.length + data.saves.length +
+            data.savedObjects.length;
+        ref.read(logProvider.notifier).addInfo(
+            'Loaded $total items'
+            ' (${data.mods.length} mods, ${data.saves.length} saves)'
+            ' in ${totalElapsed.inMilliseconds}ms');
+      }
 
       // Used in Loader
       if (onDataLoaded != null) {
@@ -358,6 +370,7 @@ class ModsStateNotifier extends AsyncNotifier<ModsState> {
       }
     } catch (e) {
       debugPrint('loadModsData error: $e');
+      ref.read(logProvider.notifier).addError('Failed to load mods: $e');
       state = AsyncValue.error(e, StackTrace.current);
     }
   }

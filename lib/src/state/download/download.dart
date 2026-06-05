@@ -58,23 +58,44 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     dio.interceptors.add(
       InterceptorsWrapper(
         onRequest: (options, handler) {
+          final proxy = ref.read(settingsProvider).proxyUrl.trim();
+          final via = proxy.isNotEmpty ? ' via $proxy' : '';
+          final headers = options.headers.entries
+              .map((e) => '  ${e.key}: ${e.value}')
+              .join('\n');
+          final body = options.data != null
+              ? '\n  body: ${options.data.toString().length > 200 ? '${options.data.toString().substring(0, 200)}…' : options.data}'
+              : '';
           ref.read(logProvider.notifier).addDebug(
-              '→ ${options.method} ${options.uri}');
+              '→ ${options.method} ${options.uri}$via\n$headers$body');
           handler.next(options);
         },
         onResponse: (response, handler) {
-          ref.read(logProvider.notifier).addDebug(
-              '← ${response.statusCode} ${response.requestOptions.uri}');
+          final status = response.statusCode ?? 0;
+          final uri = response.requestOptions.uri;
+          final headers = response.headers.map.entries
+              .map((e) => '  ${e.key}: ${e.value.join(', ')}')
+              .join('\n');
+          final msg = '← $status $uri\n$headers';
+          if (status >= 400) {
+            ref.read(logProvider.notifier).addWarning(msg);
+          } else {
+            ref.read(logProvider.notifier).addDebug(msg);
+          }
           handler.next(response);
         },
         onError: (error, handler) {
-          ref.read(logProvider.notifier).addDebug(
-              '✗ ${error.requestOptions.uri} — ${error.message}');
+          final headers = error.requestOptions.headers.entries
+              .map((e) => '  ${e.key}: ${e.value}')
+              .join('\n');
+          ref.read(logProvider.notifier).addError(
+              '✗ ${error.requestOptions.uri} — ${error.message}\n$headers');
           handler.next(error);
         },
       ),
     );
   }
+
 
   void _configureProxy() {
     final proxyUrl = ref.read(settingsProvider).proxyUrl.trim();
@@ -115,6 +136,13 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
 
   void updateProxySettings() {
     _configureProxy();
+    final proxyUrl = ref.read(settingsProvider).proxyUrl.trim();
+    if (proxyUrl.isNotEmpty) {
+      ref.read(logProvider.notifier).addInfo(
+          'Proxy configured: ${_proxyToPacEntry(proxyUrl)}');
+    } else {
+      ref.read(logProvider.notifier).addInfo('Proxy disabled');
+    }
   }
 
   Future<String> testConnection() async {
@@ -171,6 +199,8 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                 : 'All assets already present for: ${mod.saveName}');
 
     final Set<String> allDownloaded = {};
+    const refreshEvery = 10;
+    int sinceLastRefresh = 0;
 
     for (final (assets, type) in [
       (mod.assetLists.assetBundles, AssetTypeEnum.assetBundle),
@@ -186,14 +216,33 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
         modAssetListUrls: urls,
         type: type,
         force: force,
+        onBatchComplete: (batchCount) async {
+          if (batchCount == 0) return;
+          sinceLastRefresh += batchCount;
+          if (sinceLastRefresh >= refreshEvery) {
+            sinceLastRefresh = 0;
+            await ref
+                .read(existingAssetListsProvider.notifier)
+                .setExistingAssetsListByType(type);
+            await ref.read(modsProvider.notifier).updateSelectedMod(mod);
+          }
+        },
       ));
     }
 
     final downloaded = allDownloaded.length;
-    ref.read(logProvider.notifier).addSuccess(
-        downloaded > 0
-            ? 'Downloaded $downloaded asset${downloaded == 1 ? '' : 's'} for: ${mod.saveName}'
-            : 'No new assets needed for: ${mod.saveName}');
+    final expected = force ? mod.assetCount : mod.missingAssetCount;
+    if (downloaded == 0 && expected == 0) {
+      ref.read(logProvider.notifier).addSuccess(
+          'All assets already present for: ${mod.saveName}');
+    } else if (downloaded < expected) {
+      ref.read(logProvider.notifier).addWarning(
+          'Downloaded $downloaded of $expected assets for: ${mod.saveName}'
+          ' (${expected - downloaded} failed)');
+    } else {
+      ref.read(logProvider.notifier).addSuccess(
+          'Downloaded $downloaded asset${downloaded == 1 ? '' : 's'} for: ${mod.saveName}');
+    }
 
     resetState();
     return allDownloaded;
@@ -229,12 +278,57 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     );
   }
 
+  // MARK: DL URL with retry
+  Future<void> _downloadUrlWithRetry(
+    String url,
+    String tempPath,
+    CancelToken cancelToken,
+    int batchLength, {
+    int maxRetries = 3,
+  }) async {
+    int attempt = 0;
+    while (true) {
+      try {
+        await _downloadUrl(url, tempPath, cancelToken, batchLength);
+        return;
+      } on DioException catch (e) {
+        if (e.type == DioExceptionType.cancel) rethrow;
+
+        // Steam CDN 404 missing trailing slash — retry once, no backoff
+        if (e.response?.statusCode == 404 &&
+            url.startsWith(newSteamUserContentUrl) &&
+            !url.endsWith('/')) {
+          await _downloadUrl('$url/', tempPath, cancelToken, batchLength);
+          return;
+        }
+
+        // Transient errors worth retrying
+        final isTransient = e.type == DioExceptionType.connectionError ||
+            e.type == DioExceptionType.connectionTimeout ||
+            e.type == DioExceptionType.receiveTimeout ||
+            e.type == DioExceptionType.sendTimeout ||
+            (e.response?.statusCode != null &&
+                e.response!.statusCode! >= 500);
+
+        if (!isTransient || attempt >= maxRetries) rethrow;
+
+        attempt++;
+        final delay = Duration(seconds: 1 << (attempt - 1)); // 1s, 2s, 4s
+        ref.read(logProvider.notifier).addDebug(
+            'Retry $attempt/$maxRetries in ${delay.inSeconds}s'
+            ' (${e.response?.statusCode ?? e.type.name}): $url');
+        await Future.delayed(delay);
+      }
+    }
+  }
+
   // MARK: DL FILES
   Future<List<String>> downloadFiles({
     required List<String> modAssetListUrls,
     required AssetTypeEnum type,
     bool downloadingAllFiles = true,
     bool force = false,
+    Future<void> Function(int batchSuccessCount)? onBatchComplete,
   }) async {
     if (modAssetListUrls.isEmpty) {
       return [];
@@ -252,6 +346,11 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                 .read(existingAssetListsProvider.notifier)
                 .doesAssetFileExist(fileName, type);
           }).toList();
+
+    if (urls.isNotEmpty) {
+      ref.read(logProvider.notifier).addDebug(
+          'Downloading ${type.label}: ${urls.length} file${urls.length == 1 ? '' : 's'}');
+    }
 
     // Track successful downloads
     final List<(String, String)> successfulDownloads = [];
@@ -276,6 +375,7 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
           i + batchSize > urls.length ? urls.length : i + batchSize,
         );
 
+        final countBefore = successfulDownloads.length;
         await Future.wait(batch.map((originalUrl) async {
           // Skip if URL domain is in ignored list
           if (ignoredDomains.isNotEmpty) {
@@ -305,28 +405,12 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
               return;
             }
 
-            try {
-              await _downloadUrl(
-                url,
-                tempPath,
-                cancelToken,
-                batch.length,
-              );
-            } on DioException catch (e) {
-              // Check is Steam CDN url missing a trailing '/'
-              if (e.response?.statusCode == 404 &&
-                  url.startsWith(newSteamUserContentUrl) &&
-                  !url.endsWith('/')) {
-                await _downloadUrl(
-                  '$url/',
-                  tempPath,
-                  cancelToken,
-                  batch.length,
-                );
-              } else {
-                rethrow;
-              }
-            }
+            await _downloadUrlWithRetry(
+              url,
+              tempPath,
+              cancelToken,
+              batch.length,
+            );
 
             final tempFile = File(tempPath);
             final bytes = await tempFile.readAsBytes();
@@ -338,6 +422,8 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                 firstContent.contains('<!DOCTYPE')) {
               debugPrint("File is a HTML error page");
               isErrorPage = true;
+              ref.read(logProvider.notifier).addWarning(
+                  'HTML error page returned for: $url');
             }
 
             if (cancelToken.isCancelled || isErrorPage) {
@@ -373,9 +459,13 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
             }
 
             debugPrint('Download error for $url: $e');
-            ref
-                .read(logProvider.notifier)
-                .addWarning('Download failed: $url\n$e');
+            final reason = e is DioException
+                ? (e.response != null
+                    ? 'HTTP ${e.response!.statusCode}'
+                    : e.type.name)
+                : e.toString();
+            ref.read(logProvider.notifier)
+                .addWarning('Download failed ($reason): $url');
           }
         }));
 
@@ -388,6 +478,22 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
             progress: (completed / urls.length).clamp(0.0, 1.0),
           );
         }
+
+        // Log progress at 25 % milestones (and final batch)
+        if (urls.length > 10) {
+          final batchEnd = (i + batch.length).clamp(0, urls.length);
+          final pct = (batchEnd / urls.length * 100).round();
+          final prevPct = (i / urls.length * 100).round();
+          final milestone = [25, 50, 75, 100]
+              .firstWhere((m) => pct >= m && prevPct < m, orElse: () => -1);
+          if (milestone != -1) {
+            final ok = successfulDownloads.length;
+            ref.read(logProvider.notifier).addDebug(
+                '${type.label} $milestone% — $ok/$batchEnd saved');
+          }
+        }
+
+        await onBatchComplete?.call(successfulDownloads.length - countBefore);
       }
     } catch (e) {
       debugPrint('downloadAllFiles error: $e');

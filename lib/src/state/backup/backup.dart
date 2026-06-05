@@ -28,6 +28,7 @@ import 'package:tts_mod_vault/src/state/provider.dart'
         bulkActionsProvider,
         directoriesProvider,
         existingBackupsProvider,
+        logProvider,
         settingsProvider;
 import 'package:tts_mod_vault/src/utils.dart'
     show
@@ -70,6 +71,9 @@ class BackupNotifier extends StateNotifier<BackupState> {
     }
 
     state = state.copyWith(status: BackupStatusEnum.backingUp);
+
+    ref.read(logProvider.notifier).addInfo(
+        'Creating backup for: ${mod.saveName} → $backupDirPath');
 
     try {
       final filepathsData = FilepathsIsolateData(
@@ -122,6 +126,9 @@ class BackupNotifier extends StateNotifier<BackupState> {
             final backupFile = File(targetBackupFilePath);
             final backupFileSize =
                 backupFile.existsSync() ? backupFile.lengthSync() : 0;
+            final sizeMb = (backupFileSize / 1024 / 1024).toStringAsFixed(1);
+            ref.read(logProvider.notifier).addSuccess(
+                'Backup created: ${p.basename(targetBackupFilePath)} ($sizeMb MB)');
             final newBackup = ExistingBackup(
               filename: backupFileName,
               filepath: targetBackupFilePath,
@@ -143,6 +150,8 @@ class BackupNotifier extends StateNotifier<BackupState> {
       }
     } catch (e) {
       debugPrint('createBackup - error: ${e.toString()}');
+      ref.read(logProvider.notifier).addError(
+          'Backup failed for "${mod.saveName}": $e');
       state = state.copyWith(message: e.toString());
     } finally {
       state = state.copyWith(status: BackupStatusEnum.idle);

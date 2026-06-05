@@ -18,7 +18,9 @@ class LoggingConsole extends HookConsumerWidget {
     final scrollController = useScrollController();
     final filterText = useState('');
     final filterController = useTextEditingController();
-    final visibleLevels = useState(LogLevel.values.toSet());
+    // Debug hidden by default — user can enable via the chip
+    final visibleLevels = useState(
+        LogLevel.values.where((l) => l != LogLevel.debug).toSet());
 
     // Auto-scroll to bottom on new entries
     useEffect(() {

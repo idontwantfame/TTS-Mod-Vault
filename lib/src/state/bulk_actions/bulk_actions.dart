@@ -254,6 +254,9 @@ class BulkActionsNotifier extends StateNotifier<BulkActionsState> {
       return;
     }
 
+    ref.read(logProvider.notifier).addInfo(
+        'Starting download & backup for ${mods.length} mods → $selectedBackupFolder');
+
     final modsNotifier = ref.read(modsProvider.notifier);
     final downloadNotifier = ref.read(downloadProvider.notifier);
     final backupNotifier = ref.read(backupProvider.notifier);
@@ -341,6 +344,8 @@ class BulkActionsNotifier extends StateNotifier<BulkActionsState> {
       await modsNotifier.refreshModsWithSharedAssets(allAffectedFilenames);
     }
 
+    ref.read(logProvider.notifier).addSuccess(
+        'Download & backup completed for ${mods.length} mods');
     _resetState();
     downloadNotifier.resetState();
   }
@@ -417,6 +422,9 @@ class BulkActionsNotifier extends StateNotifier<BulkActionsState> {
     String newPrefix,
     bool renameFile,
   ) async {
+    ref.read(logProvider.notifier).addInfo(
+        'Updating URLs in ${mods.length} mods: '
+        '"${oldPrefixes.join('|')}" → "$newPrefix"');
     state = state.copyWith(
       status: BulkActionsStatusEnum.updateUrls,
       totalModNumber: mods.length,
@@ -466,6 +474,8 @@ class BulkActionsNotifier extends StateNotifier<BulkActionsState> {
       await ref.read(storageProvider).saveAllModUrlsData(allModUrlsData);
     }
 
+    ref.read(logProvider.notifier).addSuccess(
+        'URL update complete: ${allModUrlsData.length} of ${mods.length} mods updated');
     _resetState();
     ref.read(loaderProvider).refreshAppData();
   }
@@ -476,6 +486,9 @@ class BulkActionsNotifier extends StateNotifier<BulkActionsState> {
     bool forceUpdate,
     BuildContext context,
   ) async {
+    ref.read(logProvider.notifier).addInfo(
+        'Checking ${mods.length} mods for Workshop updates'
+        '${forceUpdate ? ' (force)' : ''}');
     state = state.copyWith(
       status: BulkActionsStatusEnum.updateModsAll,
       totalModNumber: mods.length,
@@ -629,6 +642,9 @@ class BulkActionsNotifier extends StateNotifier<BulkActionsState> {
       return;
     }
 
+    ref.read(logProvider.notifier).addInfo(
+        'Importing ${filePaths.length} backup file${filePaths.length == 1 ? '' : 's'}');
+
     final Set<String> allImportedFilenames = {};
 
     for (int i = 0; i < filePaths.length; i++) {
@@ -663,6 +679,9 @@ class BulkActionsNotifier extends StateNotifier<BulkActionsState> {
           .refreshModsWithSharedAssets(allImportedFilenames);
     }
 
+    ref.read(logProvider.notifier).addSuccess(
+        'Imported ${allImportedFilenames.length} assets from '
+        '${filePaths.length} backup file${filePaths.length == 1 ? '' : 's'}');
     _resetState();
   }
 

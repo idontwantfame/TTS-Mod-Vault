@@ -42,8 +42,23 @@ class LogEntry {
     return formatter.format(timestamp);
   }
 
-  /// Get the full log line with timestamp
+  String get levelLabel {
+    switch (level) {
+      case LogLevel.info:
+        return 'INFO';
+      case LogLevel.success:
+        return 'OK';
+      case LogLevel.warning:
+        return 'WARN';
+      case LogLevel.error:
+        return 'ERR';
+      case LogLevel.debug:
+        return 'DBG';
+    }
+  }
+
+  /// Full log line including level prefix, suitable for copy/export
   String get fullLogLine {
-    return '[$formattedTimestamp] $message';
+    return '[$formattedTimestamp] [$levelLabel] $message';
   }
 }
