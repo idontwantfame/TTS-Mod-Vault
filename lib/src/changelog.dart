@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:flutter_markdown/flutter_markdown.dart';
 
 void showChangelogDialog(BuildContext context) {
   showDialog(
@@ -21,8 +22,10 @@ void showChangelogDialog(BuildContext context) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 final text = snapshot.data ?? 'Could not load changelog.';
-                return SingleChildScrollView(
-                  child: Text(text, style: const TextStyle(fontSize: 14)),
+                return Markdown(
+                  data: text,
+                  shrinkWrap: true,
+                  physics: const ClampingScrollPhysics(),
                 );
               },
             ),
