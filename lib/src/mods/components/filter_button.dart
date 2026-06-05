@@ -134,7 +134,7 @@ class FilterButton extends HookConsumerWidget {
             leadingIcon: Icon(
               Icons.check,
               color: selectedAssetCounts.isNotEmpty
-                  ? Colors.black
+                  ? t.accent
                   : Colors.transparent,
             ),
             style: MenuItemButton.styleFrom(
@@ -197,6 +197,7 @@ class FilterButton extends HookConsumerWidget {
                         isSelected
                             ? Icons.check_box
                             : Icons.check_box_outline_blank,
+                        color: isSelected ? t.accent : t.textSecondary,
                       ),
                       Expanded(
                         child: Text(
@@ -250,6 +251,7 @@ class FilterButton extends HookConsumerWidget {
                         isSelected
                             ? Icons.check_box
                             : Icons.check_box_outline_blank,
+                        color: isSelected ? t.accent : t.textSecondary,
                       ),
                       Expanded(
                         child: Text(
@@ -287,7 +289,7 @@ class FilterButton extends HookConsumerWidget {
             leadingIcon: Icon(
               Icons.check,
               color: selectedFolders.isNotEmpty
-                  ? Colors.black
+                  ? t.accent
                   : Colors.transparent,
             ),
             style: MenuItemButton.styleFrom(
@@ -343,6 +345,7 @@ class FilterButton extends HookConsumerWidget {
                         isSelected
                             ? Icons.check_box
                             : Icons.check_box_outline_blank,
+                        color: isSelected ? t.accent : t.textSecondary,
                       ),
                       Expanded(
                         child: Text(
@@ -446,6 +449,7 @@ class FilterButton extends HookConsumerWidget {
                           isSelected
                               ? Icons.check_box
                               : Icons.check_box_outline_blank,
+                          color: isSelected ? t.accent : t.textSecondary,
                         ),
                         Expanded(
                           child: Text(
