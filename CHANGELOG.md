@@ -1,5 +1,36 @@
 # Changelog
 
+## v3.1.0
+
+### Download reliability
+
+- **Retry with exponential backoff** — transient 5xx and connection errors are retried up to 3 times (1 s → 2 s → 4 s). 4xx client errors (dead URLs) fail immediately without burning retries.
+- **Asset directories auto-created** — the Images/Models/etc. folders are created if missing before the first write, preventing silent failures on fresh installs.
+- **Post-download UI refresh** — after downloading Workshop mod assets the app rescans the asset directories and rebuilds the mod state, so assets turn green immediately without a restart.
+- **Workshop asset download fixed** — resolved a race condition where `existingAssetListsProvider` was stale at download time, causing all assets to be silently skipped.
+
+### Logging
+
+- **Full HTTP request/response logging in debug mode** — method, URL, all headers, and request body (truncated at 200 chars). Response includes status and all response headers.
+- **Debug level** — new `DBG` (grey) severity level. Hidden by default; enable via the DBG chip in the console toolbar.
+- **Level prefix in log text** — every line now includes `[INFO]`/`[OK]`/`[WARN]`/`[ERR]`/`[DBG]` so copy/export is self-describing.
+- **Batch progress milestones** — per asset type, the log emits `Images 25% — 62/62 saved` at 25/50/75/100%.
+- **Cleaner failure messages** — `Download failed (HTTP 404): url` instead of the full Dio stack trace.
+- **Comprehensive event coverage** — backup create/complete/error, bulk action start/complete, mods load time and count, settings reset, proxy enable/disable, URL prefix update summary.
+- **Console UX** — clear button uses `delete_sweep` icon (distinct from the X close button); severity filter chips are toggleable.
+
+### Proxy
+
+- **Correct PAC string generation** — `http://`, `https://`, `socks5://`, `socks4://` schemes are all handled; previously `http://host:port` was passed literally to `findProxy` causing host-lookup failures.
+- **Proxy applied on save** — changing the proxy URL in Settings now re-configures the Dio client immediately without restarting the app.
+- **Test connection button** — Settings → Network has a *Test connection* button that hits `steamcommunity.com` through the configured proxy and reports `OK — 200` or the error inline.
+- **Proxy shown in debug logs** — every request log line includes `via http://proxy:port` when a proxy is active.
+
+### CI/CD
+
+- Opted into Node.js 24 for all GitHub Actions runners (`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true`).
+- Updated action pins: `actions/checkout` → v6, `actions/upload-artifact` → v7, `actions/download-artifact` → v8, `softprops/action-gh-release` → v3.
+
 ## v3.0.0
 
 Builds on top of [v2.0.0](https://github.com/markomijic/TTS-Mod-Vault/releases/tag/v2.0.0) from the upstream project.
