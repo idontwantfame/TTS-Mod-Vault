@@ -856,6 +856,7 @@ class SettingsInterfaceColumn extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -904,8 +905,8 @@ class SettingsInterfaceColumn extends ConsumerWidget {
         CheckboxListTile(
           title: const Text('Display backups as a list instead of grid'),
           value: useBackupsListViewBox.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             useBackupsListViewBox.value = value ?? useBackupsListViewBox.value;
@@ -914,8 +915,8 @@ class SettingsInterfaceColumn extends ConsumerWidget {
         CheckboxListTile(
           title: const Text('Display mod names on grid cards'),
           value: showTitleOnCardsBox.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             showTitleOnCardsBox.value = value ?? showTitleOnCardsBox.value;
@@ -931,37 +932,28 @@ class SettingsInterfaceColumn extends ConsumerWidget {
             ),
             DropdownButton<SortOptionEnum>(
               value: defaultSortOption.value,
-              dropdownColor: Colors.white,
-              style: TextStyle(color: Colors.white),
-              underline: Container(
-                height: 2,
-                color: Colors.white,
-              ),
+              dropdownColor: t.surface,
+              style: TextStyle(color: t.textPrimary),
+              underline: Container(height: 2, color: t.border),
               focusColor: Colors.transparent,
               selectedItemBuilder: (BuildContext context) {
                 return SortOptionEnum.values.map<Widget>((item) {
                   return Container(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      item.label,
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: Text(item.label,
+                        style: TextStyle(color: t.textPrimary)),
                   );
                 }).toList();
               },
               items: SortOptionEnum.values.map((sortOption) {
                 return DropdownMenuItem<SortOptionEnum>(
                   value: sortOption,
-                  child: Text(
-                    sortOption.label,
-                    style: TextStyle(color: Colors.black),
-                  ),
+                  child: Text(sortOption.label,
+                      style: TextStyle(color: t.textPrimary)),
                 );
               }).toList(),
               onChanged: (SortOptionEnum? newValue) {
-                if (newValue != null) {
-                  defaultSortOption.value = newValue;
-                }
+                if (newValue != null) defaultSortOption.value = newValue;
               },
             ),
           ],
@@ -976,37 +968,28 @@ class SettingsInterfaceColumn extends ConsumerWidget {
             ),
             DropdownButton<BackupSortOptionEnum>(
               value: defaultBackupSortOption.value,
-              dropdownColor: Colors.white,
-              style: TextStyle(color: Colors.white),
-              underline: Container(
-                height: 2,
-                color: Colors.white,
-              ),
+              dropdownColor: t.surface,
+              style: TextStyle(color: t.textPrimary),
+              underline: Container(height: 2, color: t.border),
               focusColor: Colors.transparent,
               selectedItemBuilder: (BuildContext context) {
                 return BackupSortOptionEnum.values.map<Widget>((item) {
                   return Container(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      item.label,
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: Text(item.label,
+                        style: TextStyle(color: t.textPrimary)),
                   );
                 }).toList();
               },
               items: BackupSortOptionEnum.values.map((sortOption) {
                 return DropdownMenuItem<BackupSortOptionEnum>(
                   value: sortOption,
-                  child: Text(
-                    sortOption.label,
-                    style: TextStyle(color: Colors.black),
-                  ),
+                  child: Text(sortOption.label,
+                      style: TextStyle(color: t.textPrimary)),
                 );
               }).toList(),
               onChanged: (BackupSortOptionEnum? newValue) {
-                if (newValue != null) {
-                  defaultBackupSortOption.value = newValue;
-                }
+                if (newValue != null) defaultBackupSortOption.value = newValue;
               },
             ),
           ],
@@ -1014,13 +997,9 @@ class SettingsInterfaceColumn extends ConsumerWidget {
         Row(
           spacing: 4,
           children: [
-            Text(
-              'Asset URL font size',
-              style: TextStyle(fontSize: 16),
-            ),
+            Text('Asset URL font size', style: TextStyle(fontSize: 16)),
             AppTooltip(
-              message:
-                  "Range: 1-99 (up to 1 decimal place)\nDefault value: 12.0",
+              message: "Range: 1-99 (up to 1 decimal place)\nDefault value: 12.0",
               child: Icon(Icons.info_outline),
             ),
             Spacer(),
@@ -1029,17 +1008,25 @@ class SettingsInterfaceColumn extends ConsumerWidget {
               child: TextField(
                 textAlign: TextAlign.center,
                 controller: assetUrlFontSizeController,
-                cursorColor: Colors.black,
+                cursorColor: t.accent,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d{0,2}\.?\d?$')),
                 ],
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style: TextStyle(color: t.textPrimary, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: t.surfaceElevated,
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: t.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: t.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: t.accent, width: 1.5),
+                  ),
                 ),
                 focusNode: assetUrlFontSizeFocusNode,
                 onChanged: (value) {
@@ -1081,6 +1068,7 @@ class SettingsNetworkColumn extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final proxyTestResult = useState<String?>(null);
     final proxyTesting = useState(false);
+    final t = ref.watch(appThemeDataProvider);
 
     return SingleChildScrollView(
       child: Column(
@@ -1109,17 +1097,19 @@ class SettingsNetworkColumn extends HookConsumerWidget {
                 child: TextField(
                   textAlign: TextAlign.center,
                   controller: textFieldController,
-                  cursorColor: Colors.black,
+                  cursorColor: t.accent,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(2),
                   ],
-                  style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: t.textPrimary, fontWeight: FontWeight.bold),
                   decoration: InputDecoration(
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: t.surfaceElevated,
+                    border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
                   ),
                   focusNode: textFieldFocusNode,
                   onChanged: (value) {
@@ -1172,14 +1162,16 @@ class SettingsNetworkColumn extends HookConsumerWidget {
           SizedBox(height: 8),
           TextField(
             controller: proxyTextFieldController,
-            cursorColor: Colors.black,
-            style: TextStyle(color: Colors.black),
+            cursorColor: t.accent,
+            style: TextStyle(color: t.textPrimary),
             decoration: InputDecoration(
-              fillColor: Colors.white,
               filled: true,
-              border: OutlineInputBorder(),
+              fillColor: t.surfaceElevated,
+              border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
               hintText: 'http://proxy.example.com:8080',
-              hintStyle: TextStyle(color: Colors.grey),
+              hintStyle: TextStyle(color: t.textMuted),
             ),
             focusNode: proxyTextFieldFocusNode,
             onChanged: (value) {

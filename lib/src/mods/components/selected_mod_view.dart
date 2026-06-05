@@ -30,6 +30,7 @@ import 'package:tts_mod_vault/src/state/provider.dart'
         actionInProgressProvider,
         appThemeDataProvider,
         backupProvider,
+        detailPanelExpandedProvider,
         downloadProvider,
         modsProvider,
         multiModsProvider,
@@ -243,8 +244,16 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
+                padding: const EdgeInsets.only(top: 4, left: 4),
                 child: HelpTooltip(),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, size: 16, color: t.textMuted),
+                tooltip: 'Collapse panel',
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                onPressed: () =>
+                    ref.read(detailPanelExpandedProvider.notifier).state = false,
               ),
             ],
           ),
