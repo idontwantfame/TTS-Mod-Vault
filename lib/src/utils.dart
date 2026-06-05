@@ -517,20 +517,20 @@ Future<bool> openUrl(String url) async {
 }
 
 String getGitHubReleaseUrl(String newTagVersion) {
-  return "https://github.com/markomijic/TTS-Mod-Vault/releases/tag/v$newTagVersion";
+  return "https://github.com/idontwantfame/TTS-Mod-Vault/releases/tag/v$newTagVersion";
 }
 
 Future<String> checkForUpdatesOnGitHub() async {
   try {
     final response = await http.get(
       Uri.parse(
-          'https://api.github.com/repos/markomijic/TTS-Mod-Vault/releases/latest'),
+          'https://api.github.com/repos/idontwantfame/TTS-Mod-Vault/releases/latest'),
     );
 
     // For private repository
     /* final response = await http.get(
       Uri.parse(
-          'https://api.github.com/repos/markomijic/TTS-Mod-Vault/releases/latest'),
+          'https://api.github.com/repos/idontwantfame/TTS-Mod-Vault/releases/latest'),
       headers: {
         'Authorization': 'Bearer TOKEN_HERE',
         'Accept': 'application/vnd.github+json',
