@@ -56,7 +56,8 @@ class ModsPage extends HookConsumerWidget {
           children: [
             Expanded(child: ModsColumn()),
             if (detailExpanded) ...[
-              const VerticalDivider(width: 1),
+              // Clickable collapse handle on the divider
+              _CollapseHandle(),
               SizedBox(
                 width: MediaQuery.of(context).size.width / 3,
                 child: SelectedModView(),
@@ -313,6 +314,39 @@ class _ActionBtn extends ConsumerWidget {
             icon,
             size: 17,
             color: active ? t.textSecondary : t.textMuted,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Thin clickable strip on the divider between mod list and detail panel.
+/// Lives in ModsPage so it directly controls detailPanelExpandedProvider
+/// without any widget-tree hit-test complications.
+class _CollapseHandle extends ConsumerWidget {
+  const _CollapseHandle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
+    return AppTooltip(
+      message: 'Collapse details panel',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () =>
+            ref.read(detailPanelExpandedProvider.notifier).set(false),
+        child: MouseRegion(
+          cursor: SystemMouseCursors.click,
+          child: Container(
+            width: 14,
+            color: t.border.withValues(alpha: 0.4),
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.chevron_right,
+              size: 13,
+              color: t.textMuted,
+            ),
           ),
         ),
       ),

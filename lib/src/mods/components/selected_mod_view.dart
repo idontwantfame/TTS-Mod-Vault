@@ -29,7 +29,6 @@ import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
         backupProvider,
-        detailPanelExpandedProvider,
         downloadProvider,
         modsProvider,
         multiModsProvider,
@@ -243,17 +242,6 @@ class _SelectedModViewComponent extends HookConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
                 child: HelpTooltip(),
-              ),
-              AppTooltip(
-                message: 'Collapse details panel',
-                child: IconButton(
-                  icon: const Icon(Icons.chevron_right, size: 20),
-                  onPressed: () =>
-                      ref.read(detailPanelExpandedProvider.notifier).set(false),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                  color: Colors.white54,
-                ),
               ),
             ],
           ),
