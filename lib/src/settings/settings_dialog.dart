@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show FilteringTextInputFormatter, LengthLimitingTextInputFormatter;
 import 'package:flutter_hooks/flutter_hooks.dart'
-    show HookWidget, useFocusNode, useState, useTextEditingController;
+    show useFocusNode, useState, useTextEditingController;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show ConsumerWidget, HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as path;
@@ -360,7 +360,7 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
-class SettingsFoldersColumn extends StatelessWidget {
+class SettingsFoldersColumn extends ConsumerWidget {
   const SettingsFoldersColumn({
     super.key,
     required this.modsDir,
@@ -379,7 +379,8 @@ class SettingsFoldersColumn extends StatelessWidget {
   final ValueNotifier<bool> allowCustomSavesFolder;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -402,13 +403,13 @@ class SettingsFoldersColumn extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white),
+                    border: Border.all(color: t.border),
                     borderRadius: BorderRadius.circular(4),
-                    color: Colors.white,
+                    color: t.surfaceElevated,
                   ),
                   child: SelectableText(
                     modsDir.value,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(color: t.textPrimary),
                   ),
                 ),
               ),
@@ -464,13 +465,13 @@ class SettingsFoldersColumn extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white),
+                    border: Border.all(color: t.border),
                     borderRadius: BorderRadius.circular(4),
-                    color: Colors.white,
+                    color: t.surfaceElevated,
                   ),
                   child: SelectableText(
                     savesDir.value,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(color: t.textPrimary),
                   ),
                 ),
               ),
@@ -522,8 +523,8 @@ class SettingsFoldersColumn extends StatelessWidget {
               ],
             ),
             value: allowCustomSavesFolder.value,
-            checkColor: Colors.black,
-            activeColor: Colors.white,
+            checkColor: t.surface,
+            activeColor: t.accent,
             contentPadding: EdgeInsets.zero,
             onChanged: (value) {
               allowCustomSavesFolder.value =
@@ -549,13 +550,13 @@ class SettingsFoldersColumn extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white),
+                    border: Border.all(color: t.border),
                     borderRadius: BorderRadius.circular(4),
-                    color: Colors.white,
+                    color: t.surfaceElevated,
                   ),
                   child: SelectableText(
                     backupsDir.value,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(color: t.textPrimary),
                   ),
                 ),
               ),
@@ -604,7 +605,7 @@ class SettingsFoldersColumn extends StatelessWidget {
   }
 }
 
-class SettingsFeaturesColumn extends StatelessWidget {
+class SettingsFeaturesColumn extends ConsumerWidget {
   const SettingsFeaturesColumn({
     super.key,
     required this.checkForUpdatesOnStartBox,
@@ -621,15 +622,16 @@ class SettingsFeaturesColumn extends StatelessWidget {
   final ValueNotifier<bool> ignoreAudioAssets;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CheckboxListTile(
           title: const Text('Check for updates on start'),
           value: checkForUpdatesOnStartBox.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             checkForUpdatesOnStartBox.value =
@@ -649,8 +651,8 @@ class SettingsFeaturesColumn extends StatelessWidget {
             ],
           ),
           value: showSavedObjects.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             showSavedObjects.value = value ?? showSavedObjects.value;
@@ -684,8 +686,8 @@ the JSON filename (ExampleGame.ttsmod).""",
             ],
           ),
           value: forceBackupJsonFilename.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             forceBackupJsonFilename.value =
@@ -705,8 +707,8 @@ the JSON filename (ExampleGame.ttsmod).""",
             ],
           ),
           value: showBackupState.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             showBackupState.value = value ?? showBackupState.value;
@@ -725,8 +727,8 @@ the JSON filename (ExampleGame.ttsmod).""",
             ],
           ),
           value: ignoreAudioAssets.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             ignoreAudioAssets.value = value ?? ignoreAudioAssets.value;
@@ -1309,13 +1311,14 @@ class _SegmentedPicker<T> extends ConsumerWidget {
   }
 }
 
-class _PresetEditorDialog extends HookWidget {
+class _PresetEditorDialog extends HookConsumerWidget {
   final UrlReplacementPreset? preset;
 
   const _PresetEditorDialog({this.preset});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     final labelController = useTextEditingController(text: preset?.label ?? '');
     final oldUrlController =
         useTextEditingController(text: preset?.oldUrl ?? '');
@@ -1338,12 +1341,14 @@ class _PresetEditorDialog extends HookWidget {
             TextField(
               controller: labelController,
               autofocus: true,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-              decoration: const InputDecoration(
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              style: TextStyle(fontSize: 14, color: t.textPrimary),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: t.surfaceElevated,
+                border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               ),
             ),
             const SizedBox(height: 12),
@@ -1354,12 +1359,14 @@ class _PresetEditorDialog extends HookWidget {
             const SizedBox(height: 4),
             TextField(
               controller: oldUrlController,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-              decoration: const InputDecoration(
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              style: TextStyle(fontSize: 14, color: t.textPrimary),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: t.surfaceElevated,
+                border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               ),
             ),
             const SizedBox(height: 12),
@@ -1370,12 +1377,14 @@ class _PresetEditorDialog extends HookWidget {
             const SizedBox(height: 4),
             TextField(
               controller: newUrlController,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-              decoration: const InputDecoration(
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              style: TextStyle(fontSize: 14, color: t.textPrimary),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: t.surfaceElevated,
+                border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               ),
             ),
           ],
