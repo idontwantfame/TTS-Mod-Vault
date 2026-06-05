@@ -256,7 +256,9 @@ class _SelectedModViewComponent extends HookConsumerWidget {
             spacing: 8,
             runSpacing: 4,
             children: [
-              MenuAnchor(
+              AppTooltip(
+                message: 'Filter assets by download status',
+                child: MenuAnchor(
                 style: MenuStyle(
                   backgroundColor: WidgetStateProperty.all(t.surface),
                 ),
@@ -303,7 +305,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                     );
                   }),
                 ],
-              ),
+              )),
               if (selectedMod.hasAudioAssets) ...[
                 _AudioAssetsButton(selectedMod: selectedMod),
               ],
@@ -360,7 +362,9 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                         onChanged: (value) => searchQuery.value = value,
                       ),
                     )
-                  : SizedBox(
+                  : AppTooltip(
+                      message: 'Search assets by URL',
+                      child: SizedBox(
                       height: 32,
                       width: 32,
                       child: ElevatedButton(
@@ -380,7 +384,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                         ),
                         child: Icon(Icons.search, size: 20),
                       ),
-                    ),
+                    )),
               if (selectedMod.invalidUrls != null &&
                   selectedMod.invalidUrls!.isNotEmpty)
                 FilterChip(

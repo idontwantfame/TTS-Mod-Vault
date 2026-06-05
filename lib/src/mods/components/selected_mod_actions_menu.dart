@@ -41,7 +41,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.image, color: t.textSecondary),
-          child: Text('View Images', style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(message: 'Open the image viewer for this mod', child: Text('View Images', style: TextStyle(color: t.textPrimary))),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -56,8 +56,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.link, color: t.textSecondary),
-          child: Text('Check for invalid URLs',
-              style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(message: 'Test every asset URL and list ones that fail to load', child: Text('Check for invalid URLs', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
             showDialog(
@@ -72,8 +71,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.copy, color: t.textSecondary),
-          child:
-              Text('Copy missing URLs', style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(message: 'Copy all missing asset URLs to clipboard', child: Text('Copy missing URLs', style: TextStyle(color: t.textPrimary))),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -158,8 +156,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.delete_sweep, color: t.textSecondary),
-          child:
-              Text('Delete asset files', style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(message: 'Delete downloaded asset files for this mod (JSON file is kept)', child: Text('Delete asset files', style: TextStyle(color: t.textPrimary))),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -242,7 +239,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.edit, color: t.textSecondary),
-          child: Text('Update URLs', style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(message: 'Find and replace a URL prefix in this mod\'s asset links', child: Text('Update URLs', style: TextStyle(color: t.textPrimary))),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -282,6 +279,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
               controller.open();
             }
           },
+          tooltip: 'More actions',
           icon: Icon(Icons.more_vert, size: 16),
         );
       },

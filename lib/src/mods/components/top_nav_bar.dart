@@ -136,7 +136,9 @@ class _TypeTab extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(appThemeDataProvider);
     final displayLabel = count != null ? '$label ($count)' : label;
-    return GestureDetector(
+    return AppTooltip(
+      message: 'Switch to $label',
+      child: GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
@@ -157,7 +159,7 @@ class _TypeTab extends ConsumerWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 }
 

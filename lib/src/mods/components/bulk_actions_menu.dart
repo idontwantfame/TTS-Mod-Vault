@@ -86,7 +86,9 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.download, color: t.textPrimary),
-          child: Text('Download all', style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(
+            message: 'Download all missing assets for every mod in the current view',
+            child: Text('Download all', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -101,7 +103,9 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.archive, color: t.textPrimary),
-          child: Text('Backup all', style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(
+            message: 'Create a backup archive for every mod in the current view',
+            child: Text('Backup all', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -129,8 +133,10 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
           ),
           leadingIcon: Icon(Icons.download, color: t.textPrimary),
           trailingIcon: Icon(Icons.archive, color: t.textPrimary),
-          child: Text('Download & backup all',
-              style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(
+            message: 'Download missing assets then create backup archives',
+            child: Text('Download & backup all',
+              style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -160,8 +166,9 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
               foregroundColor: t.textPrimary,
             ),
             leadingIcon: Icon(Icons.update, color: t.textPrimary),
-            child:
-                Text('Update all mods', style: TextStyle(color: t.textPrimary)),
+            child: AppTooltip(
+            message: 'Check Steam Workshop for newer versions and re-download',
+            child: Text('Update all mods', style: TextStyle(color: t.textPrimary))),
             onPressed: () {
               if (actionInProgress) return;
 
@@ -192,8 +199,9 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.delete, color: t.textPrimary),
-          child:
-              Text('Delete all assets', style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(
+            message: 'Delete all downloaded asset files (mod JSON files are kept)',
+            child: Text('Delete all assets', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -235,7 +243,9 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
             foregroundColor: t.textPrimary,
           ),
           leadingIcon: Icon(Icons.edit, color: t.textPrimary),
-          child: Text('Update all URLs', style: TextStyle(color: t.textPrimary)),
+          child: AppTooltip(
+            message: 'Find and replace a URL prefix in asset links across every mod',
+            child: Text('Update all URLs', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
