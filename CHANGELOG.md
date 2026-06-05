@@ -1,6 +1,11 @@
 # Changelog
 
-## v3.1.0
+## v3.0.1
+
+### Critical fix
+
+- **Cleanup deleted all asset files** — the case-sensitivity fix in v3.0.0 (issue #47) lowercased `getFileNameFromURL`, so the reference set was lowercase. But `processDirectoryInIsolate` compared un-lowercased disk filenames against that set, so every file failed the match and was flagged as orphaned regardless of whether it was actually referenced. A single `.toLowerCase()` call (matching what `_getDirectoryFileNamesAndPaths` already does) fixes the comparison.
+- **Cleanup now falls back to JSON extraction** — if a mod's URL list is not yet in TMV's cache (e.g. assets downloaded directly by TTS before TMV was set up), the cleanup now reads URLs fresh from the mod's JSON file instead of silently treating all its assets as unreferenced.
 
 ### Download reliability
 
