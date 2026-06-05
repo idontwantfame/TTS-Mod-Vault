@@ -29,6 +29,5 @@ export 'bulk_update_results_dialog.dart';
 export 'update_urls_dialog.dart';
 export 'bulk_actions_menu.dart';
 export 'bulk_delete_dialog.dart';
-export 'sidebar.dart';
 export 'import_json_dialog.dart';
 export 'top_nav_bar.dart' show TopNavBar;
