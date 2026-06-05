@@ -85,7 +85,10 @@ class LoggingConsole extends HookConsumerWidget {
                       spacing: 4,
                       children: LogLevel.values.map((level) {
                         final active = visibleLevels.value.contains(level);
-                        return GestureDetector(
+                        return Tooltip(
+                          message: '${active ? "Hide" : "Show"} ${level.name} messages',
+                          waitDuration: const Duration(milliseconds: 300),
+                          child: GestureDetector(
                           onTap: () {
                             final next =
                                 Set<LogLevel>.from(visibleLevels.value);
@@ -112,7 +115,7 @@ class LoggingConsole extends HookConsumerWidget {
                               ),
                             ),
                           ),
-                        );
+                        ));
                       }).toList(),
                     ),
                     const SizedBox(width: 8),
@@ -120,7 +123,11 @@ class LoggingConsole extends HookConsumerWidget {
                       final label = ['S', 'M', 'L'][entry.key];
                       final preset = entry.value;
                       final isActive = (logHeight - preset).abs() < 30;
-                      return GestureDetector(
+                      final heights = [120, 280, 450];
+                      return Tooltip(
+                        message: '${label == 'S' ? 'Small' : label == 'M' ? 'Medium' : 'Large'} (${heights[entry.key]}px)',
+                        waitDuration: const Duration(milliseconds: 300),
+                        child: GestureDetector(
                         onTap: () =>
                             ref.read(logPanelHeightProvider.notifier).set(preset),
                         child: Container(
@@ -140,7 +147,7 @@ class LoggingConsole extends HookConsumerWidget {
                             ),
                           ),
                         ),
-                      );
+                      ));
                     }),
                     IconButton(
                       icon:

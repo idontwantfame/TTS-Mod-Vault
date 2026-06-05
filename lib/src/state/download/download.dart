@@ -200,8 +200,6 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                 : 'All assets already present for: ${mod.saveName}');
 
     final Set<String> allDownloaded = {};
-    const refreshEvery = 25;
-    int sinceLastRefresh = 0;
 
     for (final (assets, type) in [
       (mod.assetLists.assetBundles, AssetTypeEnum.assetBundle),
@@ -213,22 +211,13 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
       final urls = force
           ? assets.map((e) => e.url).toList()
           : assets.where((e) => !e.fileExists).map((e) => e.url).toList();
+      // No onBatchComplete — state updates happen only when each type's
+      // downloads finish (via addExistingAssetsBatch in the finally block),
+      // keeping the UI completely free during the download batch.
       allDownloaded.addAll(await downloadFiles(
         modAssetListUrls: urls,
         type: type,
         force: force,
-        onBatchComplete: (batchCount) async {
-          if (batchCount == 0) return;
-          sinceLastRefresh += batchCount;
-          if (sinceLastRefresh >= refreshEvery) {
-            sinceLastRefresh = 0;
-            // Only update the state — avoid the O(n×m) updateSelectedMod()
-            // during downloads; full refresh happens after all downloads.
-            await ref
-                .read(existingAssetListsProvider.notifier)
-                .setExistingAssetsListByType(type);
-          }
-        },
       ));
     }
 
