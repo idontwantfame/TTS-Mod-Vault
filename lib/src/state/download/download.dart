@@ -1,5 +1,6 @@
 import 'dart:convert' show JsonEncoder, json;
 import 'dart:io' show Directory, File, FileMode, HttpClient, RandomAccessFile;
+import 'dart:isolate' show Isolate;
 
 import 'package:bson/bson.dart' show BsonBinary, BsonCodec;
 import 'package:dio/dio.dart'
@@ -199,7 +200,7 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                 : 'All assets already present for: ${mod.saveName}');
 
     final Set<String> allDownloaded = {};
-    const refreshEvery = 10;
+    const refreshEvery = 50;
     int sinceLastRefresh = 0;
 
     for (final (assets, type) in [
@@ -264,15 +265,17 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     CancelToken cancelToken,
     int batchLength,
   ) async {
+    var _lastProgressMs = 0;
     await dio.download(
       url,
       tempPath,
       cancelToken: cancelToken,
-      options: Options(
-        receiveTimeout: const Duration(seconds: 60),
-      ),
+      options: Options(receiveTimeout: const Duration(seconds: 60)),
       onReceiveProgress: (received, total) {
         if (total <= 0 || batchLength > 1) return;
+        final now = DateTime.now().millisecondsSinceEpoch;
+        if (now - _lastProgressMs < 100) return;
+        _lastProgressMs = now;
         state = state.copyWith(progress: received / total);
       },
     );
@@ -1159,53 +1162,44 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
         return "Failed to download BSON file from $fileUrl";
       }
 
-      final bsonBinary = BsonBinary.from(response.bodyBytes);
-      final decodedData = BsonCodec.deserialize(bsonBinary);
-      decodedData.removeWhere((key, value) => value is BsonBinary);
+      // Deserialise BSON and encode to JSON in a background isolate so the
+      // main thread stays responsive. Only primitive/sendable values cross
+      // the isolate boundary (Uint8List, String, int).
+      final bytes = response.bodyBytes;
+      final titleSnapshot = title;
+      final timeUpdatedSnapshot = timeUpdated;
 
-      // Overwrite SaveName with title from Steam API if provided
-      if (title != null && title.isNotEmpty) {
-        decodedData['SaveName'] = title;
-      }
+      final jsonString = await Isolate.run(() {
+        final bsonBinary = BsonBinary.from(bytes);
+        final decodedData = BsonCodec.deserialize(bsonBinary);
+        decodedData.removeWhere((key, value) => value is BsonBinary);
 
-      // Add or update EpochTime, ensuring it's the 2nd value in JSON if adding
-      if (decodedData.containsKey('EpochTime')) {
-        // Just update the value
-        decodedData['EpochTime'] = timeUpdated;
-      } else {
-        // Add as 2nd entry by reordering
-        final reorderedData = <String, dynamic>{};
-        final entries = decodedData.entries.toList();
-
-        // Add first entry (usually SaveName)
-        if (entries.isNotEmpty) {
-          reorderedData[entries.first.key] = entries.first.value;
+        if (titleSnapshot != null && titleSnapshot.isNotEmpty) {
+          decodedData['SaveName'] = titleSnapshot;
         }
 
-        // Add EpochTime as 2nd entry
-        reorderedData['EpochTime'] = timeUpdated;
-
-        // Add remaining entries
-        for (int i = 1; i < entries.length; i++) {
-          reorderedData[entries[i].key] = entries[i].value;
+        if (decodedData.containsKey('EpochTime')) {
+          decodedData['EpochTime'] = timeUpdatedSnapshot;
+        } else {
+          final reorderedData = <String, dynamic>{};
+          final entries = decodedData.entries.toList();
+          if (entries.isNotEmpty) {
+            reorderedData[entries.first.key] = entries.first.value;
+          }
+          reorderedData['EpochTime'] = timeUpdatedSnapshot;
+          for (int i = 1; i < entries.length; i++) {
+            reorderedData[entries[i].key] = entries[i].value;
+          }
+          decodedData.clear();
+          decodedData.addAll(reorderedData);
         }
 
-        decodedData.clear();
-        decodedData.addAll(reorderedData);
-      }
-
-      // Log any problematic values before encoding
-      if (kDebugMode) _findProblematicValues(decodedData, '');
-
-      final jsonEncoder = JsonEncoder.withIndent('  ', (object) {
-        if (object is Int64) return object.toString();
-        if (object is double && object.isInfinite) {
-          return "Infinity";
-        }
-        return object;
+        return JsonEncoder.withIndent('  ', (object) {
+          if (object is Int64) return object.toString();
+          if (object is double && object.isInfinite) return 'Infinity';
+          return object;
+        }).convert(decodedData);
       });
-
-      final jsonString = jsonEncoder.convert(decodedData);
 
       final filePath = '$targetDirectory/$modId.json';
       final file = File(filePath);
@@ -1268,55 +1262,28 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     }
 
     try {
-      // Download the image
       final response = await http.get(Uri.parse(imageUrl));
       if (response.statusCode != 200) {
         debugPrint('Failed to download image');
         return;
       }
 
-      // Decode the image
-      final originalImage = img.decodeImage(response.bodyBytes);
-      if (originalImage == null) {
-        debugPrint('Failed to decode image');
-        return;
-      }
+      // Decode, crop-resize to 256×256, and re-encode entirely off the main
+      // isolate. Only the raw bytes cross the isolate boundary.
+      final bytes = response.bodyBytes;
+      final pngBytes = await Isolate.run(() {
+        final original = img.decodeImage(bytes);
+        if (original == null) throw Exception('Failed to decode image');
+        final resized = img.copyResizeCropSquare(
+          original,
+          size: 256,
+          interpolation: img.Interpolation.cubic,
+        );
+        return img.encodePng(resized, level: 0);
+      });
 
-      // First save the original at maximum quality
-      final tempPath = '$targetDirectory/${modId}_temp.png';
-      final tempFile = File(tempPath);
-      await tempFile.writeAsBytes(img.encodePng(
-        originalImage,
-        level: 0,
-      ));
-
-      // Read back the uncompressed image
-      final uncompressedBytes = await tempFile.readAsBytes();
-      final uncompressedImage = img.decodeImage(uncompressedBytes);
-      if (uncompressedImage == null) {
-        debugPrint('Failed to decode uncompressed image');
-        return;
-      }
-
-      // Now resize from the uncompressed version
-      final resizedImage = img.copyResizeCropSquare(
-        uncompressedImage,
-        size: 256,
-        interpolation: img.Interpolation.cubic,
-      );
-
-      // Save the final resized image with minimal compression
       final finalPath = '$targetDirectory/$modId.png';
-      final finalFile = File(finalPath);
-
-      await finalFile.writeAsBytes(img.encodePng(
-        resizedImage,
-        level: 0, // Keep using no compression for best quality
-      ));
-
-      // Clean up temp file
-      await tempFile.delete();
-
+      await File(finalPath).writeAsBytes(pngBytes);
       debugPrint('Image saved to: $finalPath');
     } catch (e) {
       debugPrint('Error processing image: $e');
