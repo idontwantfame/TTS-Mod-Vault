@@ -421,7 +421,7 @@ class ModListDensityNotifier extends StateNotifier<ModListDensity> {
 final detailPanelExpandedProvider =
     StateNotifierProvider<_BoolNotifier, bool>((ref) {
   final saved = ref.read(storageProvider).getUiPref(Storage.detailPanelExpandedKey);
-  return _BoolNotifier(saved == null || saved == 'true');
+  return _BoolNotifier(saved == 'true'); // default: hidden
 });
 
 final logPanelHeightProvider =

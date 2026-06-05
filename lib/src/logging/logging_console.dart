@@ -309,25 +309,17 @@ class _LogDragHandle extends ConsumerStatefulWidget {
 }
 
 class _LogDragHandleState extends ConsumerState<_LogDragHandle> {
-  static const _presets = [120.0, 280.0, 450.0];
-  static const _snapZone = 30.0;
   static const _min = 80.0;
   static const _max = 600.0;
-
-  double _snap(double h) {
-    for (final p in _presets) {
-      if ((h - p).abs() <= _snapZone) return p;
-    }
-    return h.clamp(_min, _max);
-  }
 
   @override
   Widget build(BuildContext context) {
     final t = ref.watch(appThemeDataProvider);
     return GestureDetector(
       onVerticalDragUpdate: (d) {
+        // Free resize — no snapping during drag; S/M/L buttons handle presets
         final newH = (widget.currentHeight - d.delta.dy).clamp(_min, _max);
-        ref.read(logPanelHeightProvider.notifier).set(_snap(newH));
+        ref.read(logPanelHeightProvider.notifier).set(newH);
       },
       onDoubleTap: () => ref.read(logPanelHeightProvider.notifier).set(280),
       child: MouseRegion(

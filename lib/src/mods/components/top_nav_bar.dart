@@ -1,27 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart'
-    show ConsumerWidget, WidgetRef;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show DownloadModsDialog, ImportJsonDialog;
+    show AsyncValueX, ConsumerWidget, WidgetRef;
+import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         AppPage,
-        actionInProgressProvider,
         appThemeDataProvider,
-        bulkActionsProvider,
-        cleanupProvider,
         directoriesProvider,
-        importBackupProvider,
-        loaderProvider,
-        loggingProvider,
+        modsProvider,
+        selectedModTypeProvider,
         selectedPageProvider,
         settingsProvider;
 import 'package:tts_mod_vault/src/settings/settings_dialog.dart'
     show SettingsDialog;
 import 'package:tts_mod_vault/src/help_dialog.dart' show showHelpDialog;
 import 'package:tts_mod_vault/src/ui/ui.dart';
-import 'package:tts_mod_vault/src/utils.dart'
-    show showConfirmDialog, showConfirmDialogWithCheckbox, showSnackBar;
 
 class TopNavBar extends ConsumerWidget {
   const TopNavBar({super.key});
@@ -30,8 +23,14 @@ class TopNavBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(appThemeDataProvider);
     final selectedPage = ref.watch(selectedPageProvider);
-    final actionInProgress = ref.watch(actionInProgressProvider);
+    final selectedModType = ref.watch(selectedModTypeProvider);
+    final modsState = ref.watch(modsProvider).valueOrNull;
     final backupsDir = ref.watch(directoriesProvider).backupsDir;
+    final showSavedObjects = ref.watch(settingsProvider).showSavedObjects;
+
+    final modsCount = modsState?.mods.length ?? 0;
+    final savesCount = modsState?.saves.length ?? 0;
+    final savedObjectsCount = modsState?.savedObjects.length ?? 0;
 
     return Container(
       height: 44,
@@ -42,6 +41,7 @@ class TopNavBar extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
+          // App name
           Text(
             'TTS Mod Vault',
             style: TextStyle(
@@ -51,107 +51,67 @@ class TopNavBar extends ConsumerWidget {
               letterSpacing: 0.5,
             ),
           ),
-          const SizedBox(width: 20),
-          _PageTab(
-            label: 'Mods',
-            active: selectedPage == AppPage.mods,
-            onTap: () =>
-                ref.read(selectedPageProvider.notifier).state = AppPage.mods,
-          ),
-          const SizedBox(width: 4),
-          if (backupsDir.isNotEmpty)
-            _PageTab(
+          const SizedBox(width: 16),
+          // Type tabs (Mods / Saves / SavedObjects) — only on Mods page
+          if (selectedPage == AppPage.mods) ...[
+            _TypeTab(
+              label: 'Mods',
+              count: modsCount,
+              active: selectedModType == ModTypeEnum.mod,
+              onTap: () => ref.read(selectedModTypeProvider.notifier).state =
+                  ModTypeEnum.mod,
+            ),
+            const SizedBox(width: 4),
+            _TypeTab(
+              label: 'Saves',
+              count: savesCount,
+              active: selectedModType == ModTypeEnum.save,
+              onTap: () => ref.read(selectedModTypeProvider.notifier).state =
+                  ModTypeEnum.save,
+            ),
+            if (showSavedObjects) ...[
+              const SizedBox(width: 4),
+              _TypeTab(
+                label: 'Saved Objects',
+                count: savedObjectsCount,
+                active: selectedModType == ModTypeEnum.savedObject,
+                onTap: () =>
+                    ref.read(selectedModTypeProvider.notifier).state =
+                        ModTypeEnum.savedObject,
+              ),
+            ],
+          ],
+          // Backups page tab
+          if (backupsDir.isNotEmpty) ...[
+            const SizedBox(width: 4),
+            _TypeTab(
               label: 'Backups',
+              count: null,
               active: selectedPage == AppPage.backups,
               onTap: () =>
                   ref.read(selectedPageProvider.notifier).state =
                       AppPage.backups,
             ),
+          ],
           const Spacer(),
-          _NavIconAction(
-            icon: Icons.refresh,
-            tooltip: TooltipStrings.navRefresh,
-            disabled: actionInProgress,
-            onPressed: () => showConfirmDialogWithCheckbox(
-              context,
-              title: 'Refresh all data?',
-              onConfirm: (clearCache) async =>
-                  ref.read(loaderProvider).refreshAppData(clearCache),
-              checkboxLabel: 'Clear Vault cache',
-              checkboxInfoMessage:
-                  'Reloads everything from files instead of cache. Takes longer.',
-            ),
-          ),
-          _NavIconAction(
-            icon: Icons.delete_sweep,
-            tooltip: TooltipStrings.navCleanup,
-            disabled: actionInProgress,
-            onPressed: () async {
-              final cleanupNotifier = ref.read(cleanupProvider.notifier);
-              await cleanupNotifier.startCleanup((count) {
-                if (count > 0) {
-                  final types = ref.read(settingsProvider).showSavedObjects
-                      ? 'mods, saves and saved objects'
-                      : 'mods and saves';
-                  showConfirmDialog(
-                    context,
-                    '$count asset files found that are not used by any of your $types.\n\nAre you sure you want to delete them?',
-                    () async => cleanupNotifier.executeDelete(),
-                    () => cleanupNotifier.resetState(),
-                  );
-                } else {
-                  showSnackBar(context, 'No files found to delete');
-                }
-              });
-            },
-          ),
-          _NavIconAction(
-            icon: Icons.unarchive,
-            tooltip: TooltipStrings.navImportBackup,
-            disabled: actionInProgress,
-            onPressed: () async =>
-                ref.read(bulkActionsProvider.notifier).importBackups(),
-          ),
-          _NavIconAction(
-            icon: Icons.upload_file,
-            tooltip: TooltipStrings.navImportJson,
-            disabled: actionInProgress,
-            onPressed: () => showDialog(
-              context: context,
-              builder: (ctx) => ImportJsonDialog(
-                onConfirm: (jsonFilePath, destination, modType, pngFilePath) =>
-                    ref.read(importBackupProvider.notifier).importJson(
-                        jsonFilePath, destination, modType, pngFilePath),
+          // Settings & Help only on the right
+          AppTooltip(
+            message: TooltipStrings.navSettings,
+            child: _NavButton(
+              icon: Icons.settings,
+              onPressed: () => showDialog(
+                context: context,
+                builder: (ctx) => const SettingsDialog(),
               ),
             ),
           ),
-          _NavIconAction(
-            icon: Icons.download,
-            tooltip: TooltipStrings.navDownload,
-            disabled: actionInProgress,
-            onPressed: () => showDialog(
-              context: context,
-              builder: (ctx) => const DownloadModsDialog(),
+          const SizedBox(width: 4),
+          AppTooltip(
+            message: TooltipStrings.navHelp,
+            child: _NavButton(
+              icon: Icons.help_outline_rounded,
+              onPressed: () => showHelpDialog(context),
             ),
-          ),
-          _NavIconAction(
-            icon: Icons.help_outline_rounded,
-            tooltip: TooltipStrings.navHelp,
-            onPressed: () => showHelpDialog(context),
-          ),
-          _NavIconAction(
-            icon: Icons.settings,
-            tooltip: TooltipStrings.navSettings,
-            onPressed: () => showDialog(
-              context: context,
-              builder: (ctx) => const SettingsDialog(),
-            ),
-          ),
-          _NavIconAction(
-            icon: Icons.terminal,
-            tooltip: TooltipStrings.navToggleLog,
-            onPressed: () =>
-                ref.read(loggingProvider.notifier).toggleVisibility(),
           ),
         ],
       ),
@@ -159,17 +119,23 @@ class TopNavBar extends ConsumerWidget {
   }
 }
 
-class _PageTab extends ConsumerWidget {
+class _TypeTab extends ConsumerWidget {
   final String label;
+  final int? count;
   final bool active;
   final VoidCallback onTap;
 
-  const _PageTab(
-      {required this.label, required this.active, required this.onTap});
+  const _TypeTab({
+    required this.label,
+    required this.count,
+    required this.active,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(appThemeDataProvider);
+    final displayLabel = count != null ? '$label ($count)' : label;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -183,7 +149,7 @@ class _PageTab extends ConsumerWidget {
           ),
         ),
         child: Text(
-          label,
+          displayLabel,
           style: TextStyle(
             color: active ? t.accent : t.textSecondary,
             fontSize: 12,
@@ -195,31 +161,24 @@ class _PageTab extends ConsumerWidget {
   }
 }
 
-class _NavIconAction extends ConsumerWidget {
+class _NavButton extends ConsumerWidget {
   final IconData icon;
-  final String tooltip;
   final VoidCallback? onPressed;
-  final bool disabled;
 
-  const _NavIconAction({
-    required this.icon,
-    required this.tooltip,
-    this.onPressed,
-    this.disabled = false,
-  });
+  const _NavButton({required this.icon, this.onPressed});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(appThemeDataProvider);
-    return AppTooltip(
-      message: tooltip,
-      child: IconButton(
-        icon: Icon(icon, size: 18),
-        color: disabled ? t.textMuted : t.textSecondary,
-        onPressed: disabled ? null : onPressed,
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
         padding: const EdgeInsets.all(6),
-        constraints: const BoxConstraints(),
-        splashRadius: 18,
+        decoration: BoxDecoration(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(5),
+        ),
+        child: Icon(icon, size: 18, color: t.textSecondary),
       ),
     );
   }
