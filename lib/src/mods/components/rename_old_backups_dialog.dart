@@ -1,5 +1,4 @@
 import 'dart:io' show File;
-import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart'
@@ -11,6 +10,8 @@ import 'package:tts_mod_vault/src/mods/components/components.dart'
     show CustomTooltip;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show directoriesProvider, existingBackupsProvider, loaderProvider;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppButton, AppButtonVariant;
 
 class RenameOldBackupsDialog extends HookConsumerWidget {
   const RenameOldBackupsDialog({super.key});
@@ -52,9 +53,7 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
       return null;
     }, [renamingData]);
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-      child: Dialog(
+    return Dialog(
         backgroundColor: Theme.of(context).colorScheme.surface,
         child: SizedBox(
           width: 1280 * 0.95,
@@ -198,32 +197,38 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   spacing: 8,
                   children: [
-                    ElevatedButton(
+                    AppButton(
+                      label: 'Select All',
                       onPressed: () {
                         selectedIndices.value =
                             Set.from(renamingData.map((d) => d.index));
                       },
-                      child: const Text('Select All'),
+                      variant: AppButtonVariant.secondary,
                     ),
-                    ElevatedButton(
+                    AppButton(
+                      label: 'Deselect All',
                       onPressed: () {
                         selectedIndices.value = {};
                       },
-                      child: const Text('Deselect All'),
+                      variant: AppButtonVariant.secondary,
                     ),
                     Text(
                       '${selectedIndices.value.length} of ${renamingData.length} selected',
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     Spacer(),
-                    ElevatedButton(
+                    AppButton(
+                      label: 'Cancel',
                       onPressed: () => Navigator.pop(context),
-                      child: const Text('Cancel'),
+                      variant: AppButtonVariant.secondary,
                     ),
                     CustomTooltip(
                       message:
                           'Data will be refreshed after renaming files.\nIf a file under new name already exists it will be skipped.',
-                      child: ElevatedButton.icon(
+                      child: AppButton(
+                        label: selectedIndices.value.isEmpty
+                            ? 'Select files to rename'
+                            : 'Rename ${selectedIndices.value.length} file${selectedIndices.value.length == 1 ? '' : 's'}',
                         onPressed: selectedIndices.value.isEmpty
                             ? null
                             : () async {
@@ -270,11 +275,7 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
                                 }
                               },
                         icon: const Icon(Icons.edit),
-                        label: Text(
-                          selectedIndices.value.isEmpty
-                              ? 'Select files to rename'
-                              : 'Rename ${selectedIndices.value.length} file${selectedIndices.value.length == 1 ? '' : 's'}',
-                        ),
+                        variant: AppButtonVariant.primary,
                       ),
                     ),
                   ],
@@ -283,7 +284,6 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
             ),
           ),
         ),
-      ),
     );
   }
 

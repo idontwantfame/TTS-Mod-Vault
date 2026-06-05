@@ -1,5 +1,3 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:file_picker/file_picker.dart'
     show FilePicker, FilePickerResult, FileType;
 import 'package:flutter/material.dart';
@@ -10,6 +8,8 @@ import 'package:path/path.dart' as path;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart' show directoriesProvider;
 import 'package:tts_mod_vault/src/utils.dart' show showSnackBar;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppDialog, AppButton, AppButtonVariant;
 
 class ImportJsonDialog extends HookConsumerWidget {
   final Function(
@@ -35,62 +35,9 @@ class ImportJsonDialog extends HookConsumerWidget {
     final folderPath = useState(workshopDir);
     final modType = useState(ModTypeEnum.mod);
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-      child: AlertDialog(
-        contentPadding: EdgeInsets.all(24),
-        actions: [
-          Row(
-            spacing: 8,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () async {
-                  try {
-                    final initialFolder = folderPath.value;
-                    final normalizedPath = path.normalize(initialFolder);
-                    final folder = await FilePicker.platform.getDirectoryPath(
-                      lockParentWindow: true,
-                      initialDirectory: normalizedPath,
-                    );
-                    if (folder != null) {
-                      folderPath.value = folder;
-                    }
-                  } catch (e) {
-                    if (context.mounted) showSnackBar(context, e.toString());
-                  }
-                },
-                icon: const Icon(Icons.folder),
-                label: const Text('Select folder'),
-              ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton.icon(
-                onPressed: () {
-                  if (jsonFile.value == null || folderPath.value.isEmpty) {
-                    return;
-                  }
-
-                  final filePath = jsonFile.value!.files.single.path!;
-                  onConfirm.call(
-                    filePath,
-                    folderPath.value,
-                    modType.value,
-                    pngFile.value?.files.single.path,
-                  );
-                  Navigator.pop(context);
-                },
-                icon: const Icon(Icons.upload_file),
-                label: const Text('Import'),
-              ),
-            ],
-          ),
-        ],
-        content: SizedBox(
-          width: 700,
-          child: Column(
+    return AppDialog(
+      width: 700,
+      content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 8,
@@ -108,7 +55,8 @@ class ImportJsonDialog extends HookConsumerWidget {
                   Spacer(),
                 ],
               ),
-              ElevatedButton.icon(
+              AppButton(
+                label: 'Select JSON',
                 onPressed: () async {
                   try {
                     final result = await FilePicker.platform.pickFiles(
@@ -125,7 +73,6 @@ class ImportJsonDialog extends HookConsumerWidget {
                   }
                 },
                 icon: const Icon(Icons.file_open),
-                label: const Text('Select JSON'),
               ),
               Row(
                 children: [
@@ -142,7 +89,8 @@ class ImportJsonDialog extends HookConsumerWidget {
                   Spacer(),
                 ],
               ),
-              ElevatedButton.icon(
+              AppButton(
+                label: 'Select Image (Optional)',
                 onPressed: () async {
                   try {
                     final result = await FilePicker.platform.pickFiles(
@@ -159,7 +107,6 @@ class ImportJsonDialog extends HookConsumerWidget {
                   }
                 },
                 icon: const Icon(Icons.image),
-                label: const Text('Select Image (Optional)'),
               ),
               if (jsonFile.value != null && pngFile.value != null)
                 Text(
@@ -229,8 +176,52 @@ class ImportJsonDialog extends HookConsumerWidget {
               ),
             ],
           ),
+      actions: [
+        AppButton(
+          label: 'Select folder',
+          onPressed: () async {
+            try {
+              final initialFolder = folderPath.value;
+              final normalizedPath = path.normalize(initialFolder);
+              final folder = await FilePicker.platform.getDirectoryPath(
+                lockParentWindow: true,
+                initialDirectory: normalizedPath,
+              );
+              if (folder != null) {
+                folderPath.value = folder;
+              }
+            } catch (e) {
+              if (context.mounted) showSnackBar(context, e.toString());
+            }
+          },
+          icon: const Icon(Icons.folder),
         ),
-      ),
+        const Spacer(),
+        AppButton(
+          label: 'Cancel',
+          onPressed: () => Navigator.pop(context),
+          variant: AppButtonVariant.secondary,
+        ),
+        AppButton(
+          label: 'Import',
+          onPressed: () {
+            if (jsonFile.value == null || folderPath.value.isEmpty) {
+              return;
+            }
+
+            final filePath = jsonFile.value!.files.single.path!;
+            onConfirm.call(
+              filePath,
+              folderPath.value,
+              modType.value,
+              pngFile.value?.files.single.path,
+            );
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.upload_file),
+          variant: AppButtonVariant.primary,
+        ),
+      ],
     );
   }
 }
