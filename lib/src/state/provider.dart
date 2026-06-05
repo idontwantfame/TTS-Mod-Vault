@@ -386,3 +386,80 @@ final appThemePersistProvider = Provider<void>((ref) {
     ref.read(storageProvider).saveUiPref(Storage.appThemeIdKey, next.name);
   });
 });
+
+// --- Mod list display preferences ---
+
+enum ModListStyle { richRows, gridCards, compact }
+
+enum ModListDensity { compact, defaultDensity, comfortable }
+
+class _BoolNotifier extends StateNotifier<bool> {
+  _BoolNotifier(super.state);
+  void toggle() => state = !state;
+  // ignore: use_setters_to_change_properties
+  void set(bool v) => state = v;
+}
+
+class _DoubleNotifier extends StateNotifier<double> {
+  _DoubleNotifier(super.state);
+  // ignore: use_setters_to_change_properties
+  void set(double v) => state = v;
+}
+
+class ModListStyleNotifier extends StateNotifier<ModListStyle> {
+  ModListStyleNotifier(super.state);
+  // ignore: use_setters_to_change_properties
+  void set(ModListStyle s) => state = s;
+}
+
+class ModListDensityNotifier extends StateNotifier<ModListDensity> {
+  ModListDensityNotifier(super.state);
+  // ignore: use_setters_to_change_properties
+  void set(ModListDensity d) => state = d;
+}
+
+final detailPanelExpandedProvider =
+    StateNotifierProvider<_BoolNotifier, bool>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.detailPanelExpandedKey);
+  return _BoolNotifier(saved == null || saved == 'true');
+});
+
+final logPanelHeightProvider =
+    StateNotifierProvider<_DoubleNotifier, double>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.logPanelHeightKey);
+  return _DoubleNotifier(
+      saved != null ? (double.tryParse(saved) ?? 280.0) : 280.0);
+});
+
+final modListStyleProvider =
+    StateNotifierProvider<ModListStyleNotifier, ModListStyle>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.modListStyleKey);
+  final initial = saved != null
+      ? ModListStyle.values.firstWhere((e) => e.name == saved,
+          orElse: () => ModListStyle.richRows)
+      : ModListStyle.richRows;
+  return ModListStyleNotifier(initial);
+});
+
+final modListDensityProvider =
+    StateNotifierProvider<ModListDensityNotifier, ModListDensity>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.modListDensityKey);
+  final initial = saved != null
+      ? ModListDensity.values.firstWhere((e) => e.name == saved,
+          orElse: () => ModListDensity.defaultDensity)
+      : ModListDensity.defaultDensity;
+  return ModListDensityNotifier(initial);
+});
+
+final uiPrefPersistProvider = Provider<void>((ref) {
+  ref.keepAlive();
+  final storage = ref.read(storageProvider);
+  ref.listen<bool>(detailPanelExpandedProvider,
+      (_, v) => storage.saveUiPref(Storage.detailPanelExpandedKey, '$v'));
+  ref.listen<double>(logPanelHeightProvider,
+      (_, v) => storage.saveUiPref(Storage.logPanelHeightKey, '$v'));
+  ref.listen<ModListStyle>(modListStyleProvider,
+      (_, v) => storage.saveUiPref(Storage.modListStyleKey, v.name));
+  ref.listen<ModListDensity>(modListDensityProvider,
+      (_, v) => storage.saveUiPref(Storage.modListDensityKey, v.name));
+});

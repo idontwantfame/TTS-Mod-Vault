@@ -4,7 +4,7 @@ import 'package:tts_mod_vault/src/mods/images_viewer_page.dart' show ImagesViewe
 import 'package:tts_mod_vault/src/splash/splash_page.dart' show SplashPage;
 import 'package:tts_mod_vault/src/mods/vault.dart' show Vault;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show appThemeDataProvider, appThemePersistProvider;
+    show appThemeDataProvider, appThemePersistProvider, uiPrefPersistProvider;
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -13,6 +13,7 @@ class App extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeData = ref.watch(appThemeDataProvider);
     ref.watch(appThemePersistProvider);
+    ref.watch(uiPrefPersistProvider);
 
     return MaterialApp(
       title: 'TTS Mod Vault',
