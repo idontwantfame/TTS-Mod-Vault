@@ -1,5 +1,32 @@
 # Changelog
 
+## v3.5.0
+
+### UI rework
+
+- **New theme system** — three dark palettes (Purple Dark, Blue Slate, Black Teal) switchable in Settings → Interface
+- **Top navigation bar** — replaces the sidebar; Mods / Saves / Saved Objects / Backups tabs at the top
+- **Collapsible mod info panel** — click any mod to open the detail panel on the right; click it again to close it
+- **Resizable log console** — drag the top edge to any height; S / M / L preset buttons for quick snapping
+- **Comprehensive tooltips** — every button, tab, menu item, and icon has a descriptive hover tooltip (300 ms delay)
+- **Consistent dark theming** — all dropdowns, settings dialogs, filter menus, checkboxes, text fields, and context menus now use the active theme palette
+
+### Performance
+
+- **Image processing off-thread** — thumbnail decode / crop-resize / encode runs in a background isolate; eliminated the 0.5–2 s UI freeze per mod download
+- **BSON → JSON conversion off-thread** — Workshop mod conversion no longer blocks the main thread
+- **Downloads non-blocking** — active downloads no longer lock the mod list; scroll, select, and browse freely while assets download
+- **Batched asset state updates** — N separate map copies reduced to one per completed batch
+- **Throttled progress updates** — capped at one UI update per 100 ms during single-file downloads
+
+### Other
+
+- **Changelog rendered from file** — the in-app changelog dialog reads and renders `CHANGELOG.md` directly; no more hardcoded release notes
+- **Update check points to this fork** — version checks and release links use `idontwantfame/TTS-Mod-Vault`
+- **README updated** — fork attribution, updated download links, "What's new" section
+
+---
+
 ## v3.0.1
 
 ### Critical fix
