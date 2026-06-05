@@ -7,7 +7,6 @@ import 'package:tts_mod_vault/src/state/sort_and_filter/sort_and_filter_state.da
     show SortOptionEnum;
 
 class SettingsState {
-  final bool useModsListView;
   final bool useBackupsListView;
   final bool showTitleOnCards;
   final bool checkForUpdatesOnStart;
@@ -26,7 +25,6 @@ class SettingsState {
   final String proxyUrl;
 
   const SettingsState({
-    required this.useModsListView,
     required this.useBackupsListView,
     required this.showTitleOnCards,
     required this.checkForUpdatesOnStart,
@@ -47,7 +45,6 @@ class SettingsState {
 
   factory SettingsState.defaultState() {
     return SettingsState(
-      useModsListView: false,
       useBackupsListView: false,
       showTitleOnCards: false,
       checkForUpdatesOnStart: true,
@@ -68,7 +65,6 @@ class SettingsState {
 
   Map<String, dynamic> toJson() {
     return {
-      'useModsListView': useModsListView,
       'useBackupsListView': useBackupsListView,
       'showTitleOnCards': showTitleOnCards,
       'checkForUpdatesOnStart': checkForUpdatesOnStart,
@@ -91,7 +87,6 @@ class SettingsState {
 
   factory SettingsState.fromJson(Map<String, dynamic> json) {
     return SettingsState(
-      useModsListView: _parseBool(json['useModsListView'], false),
       useBackupsListView: _parseBool(json['useBackupsListView'], false),
       showTitleOnCards: _parseBool(json['showTitleOnCards'], false),
       checkForUpdatesOnStart: _parseBool(json['checkForUpdatesOnStart'], true),

@@ -7,7 +7,7 @@ import 'package:flutter/services.dart'
 import 'package:flutter_hooks/flutter_hooks.dart'
     show HookWidget, useFocusNode, useState, useTextEditingController;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
-    show HookConsumerWidget, WidgetRef;
+    show ConsumerWidget, HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as path;
 import 'package:tts_mod_vault/src/mods/components/components.dart'
     show CustomTooltip;
@@ -18,12 +18,20 @@ import 'package:tts_mod_vault/src/state/directories/directories.dart'
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
+        appThemeDataProvider,
+        appThemeProvider,
         directoriesProvider,
         downloadProvider,
+        modListDensityProvider,
+        modListStyleProvider,
+        ModListDensity,
+        ModListStyle,
         modsProvider,
         multiModsProvider,
         selectedModTypeProvider,
         settingsProvider;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppThemeData, AppThemeId, AppTooltip;
 import 'package:tts_mod_vault/src/models/url_replacement_preset.dart'
     show UrlReplacementPreset;
 import 'package:tts_mod_vault/src/state/settings/settings_state.dart'
@@ -85,7 +93,6 @@ class SettingsDialog extends HookConsumerWidget {
     final selectedSection = useState<SettingsSection>(SettingsSection.features);
 
     // UI
-    final useModsListViewBox = useState(settings.useModsListView);
     final useBackupsListViewBox = useState(settings.useBackupsListView);
     final showTitleOnCardsBox = useState(settings.showTitleOnCards);
     final defaultSortOption = useState(settings.defaultSortOption);
@@ -130,7 +137,6 @@ class SettingsDialog extends HookConsumerWidget {
       concurrentDownloads = concurrentDownloads.clamp(1, 99);
 
       final newState = SettingsState(
-        useModsListView: useModsListViewBox.value,
         useBackupsListView: useBackupsListViewBox.value,
         showTitleOnCards: showTitleOnCardsBox.value,
         checkForUpdatesOnStart: checkForUpdatesOnStartBox.value,
@@ -239,7 +245,6 @@ class SettingsDialog extends HookConsumerWidget {
 
                                 case SettingsSection.interface:
                                   return SettingsInterfaceColumn(
-                                    useModsListViewBox: useModsListViewBox,
                                     useBackupsListViewBox:
                                         useBackupsListViewBox,
                                     showTitleOnCardsBox: showTitleOnCardsBox,
@@ -831,10 +836,9 @@ class SettingsUpdateUrlsPresetsColumn extends StatelessWidget {
   }
 }
 
-class SettingsInterfaceColumn extends StatelessWidget {
+class SettingsInterfaceColumn extends ConsumerWidget {
   const SettingsInterfaceColumn({
     super.key,
-    required this.useModsListViewBox,
     required this.useBackupsListViewBox,
     required this.showTitleOnCardsBox,
     required this.defaultSortOption,
@@ -844,7 +848,6 @@ class SettingsInterfaceColumn extends StatelessWidget {
     required this.assetUrlFontSizeFocusNode,
   });
 
-  final ValueNotifier<bool> useModsListViewBox;
   final ValueNotifier<bool> useBackupsListViewBox;
   final ValueNotifier<bool> showTitleOnCardsBox;
   final ValueNotifier<SortOptionEnum> defaultSortOption;
@@ -854,20 +857,52 @@ class SettingsInterfaceColumn extends StatelessWidget {
   final FocusNode assetUrlFontSizeFocusNode;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CheckboxListTile(
-          title: const Text('Display mods as a list instead of grid'),
-          value: useModsListViewBox.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
-          contentPadding: EdgeInsets.all(0),
-          onChanged: (value) {
-            useModsListViewBox.value = value ?? useModsListViewBox.value;
-          },
+        // Theme selector
+        Row(
+          children: [
+            const Expanded(child: Text('Theme', style: TextStyle(fontSize: 16))),
+            _ThemeSelector(),
+          ],
         ),
+        const SizedBox(height: 16),
+        // Mod list style
+        Row(
+          children: [
+            const Expanded(child: Text('Mod list style', style: TextStyle(fontSize: 16))),
+            _SegmentedPicker<ModListStyle>(
+              values: ModListStyle.values,
+              current: ref.watch(modListStyleProvider),
+              label: (v) => switch (v) {
+                ModListStyle.richRows => 'Rich',
+                ModListStyle.gridCards => 'Grid',
+                ModListStyle.compact => 'Compact',
+              },
+              onSelect: (v) => ref.read(modListStyleProvider.notifier).set(v),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // List density
+        Row(
+          children: [
+            const Expanded(child: Text('List density', style: TextStyle(fontSize: 16))),
+            _SegmentedPicker<ModListDensity>(
+              values: ModListDensity.values,
+              current: ref.watch(modListDensityProvider),
+              label: (v) => switch (v) {
+                ModListDensity.compact => 'Compact',
+                ModListDensity.defaultDensity => 'Default',
+                ModListDensity.comfortable => 'Comfortable',
+              },
+              onSelect: (v) => ref.read(modListDensityProvider.notifier).set(v),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         CheckboxListTile(
           title: const Text('Display backups as a list instead of grid'),
           value: useBackupsListViewBox.value,
@@ -1195,6 +1230,91 @@ class SettingsNetworkColumn extends HookConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ThemeSelector extends ConsumerWidget {
+  const _ThemeSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
+    final current = ref.watch(appThemeProvider);
+
+    return Row(
+      spacing: 10,
+      children: AppThemeId.values.map((id) {
+        final themeData = AppThemeData.forId(id);
+        final isSelected = id == current;
+        return AppTooltip(
+          message: id.label,
+          child: GestureDetector(
+            onTap: () => ref.read(appThemeProvider.notifier).setTheme(id),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: themeData.accent,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? t.textPrimary : Colors.transparent,
+                  width: 2.5,
+                ),
+                boxShadow: isSelected
+                    ? [BoxShadow(
+                        color: themeData.accent.withValues(alpha: 0.5),
+                        blurRadius: 6)]
+                    : null,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _SegmentedPicker<T> extends ConsumerWidget {
+  final List<T> values;
+  final T current;
+  final String Function(T) label;
+  final void Function(T) onSelect;
+
+  const _SegmentedPicker({
+    required this.values,
+    required this.current,
+    required this.label,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
+    return Row(
+      children: values.map((v) {
+        final active = v == current;
+        return GestureDetector(
+          onTap: () => onSelect(v),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: active ? t.accent : t.surfaceElevated,
+              border: Border.all(color: active ? t.accent : t.border),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              label(v),
+              style: TextStyle(
+                color: active ? t.accentText : t.textSecondary,
+                fontSize: 11,
+                fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }
