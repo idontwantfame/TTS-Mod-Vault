@@ -5,7 +5,6 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tts_mod_vault/src/models/log_entry.dart' show LogLevel;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show logProvider, loggingProvider, logPanelHeightProvider, appThemeDataProvider;
-import 'package:tts_mod_vault/src/ui/ui.dart' show AppThemeData;
 
 /// Panel shown at the bottom of the mods column.
 /// Visibility is toggled via [loggingProvider]; log data comes from [logProvider].

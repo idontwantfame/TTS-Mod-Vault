@@ -5,8 +5,6 @@ import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:flutter_hooks/flutter_hooks.dart' show useMemoized;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
 import 'package:tts_mod_vault/src/mods/components/mod_thumbnail.dart'
     show ModThumbnail;
 import 'package:tts_mod_vault/src/state/backup/backup_status_enum.dart'
