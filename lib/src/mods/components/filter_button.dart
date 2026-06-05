@@ -8,6 +8,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
         selectedModTypeProvider,
         settingsProvider,
         sortAndFilterProvider;
@@ -23,6 +24,7 @@ class FilterButton extends HookConsumerWidget {
     final selectedModType = ref.watch(selectedModTypeProvider);
     final sortAndFilterState = ref.watch(sortAndFilterProvider);
     final sortAndFilterNotifier = ref.read(sortAndFilterProvider.notifier);
+    final t = ref.watch(appThemeDataProvider);
 
     useEffect(() {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -74,7 +76,7 @@ class FilterButton extends HookConsumerWidget {
       height: 32,
       child: MenuAnchor(
         style: MenuStyle(
-          backgroundColor: WidgetStateProperty.all(Colors.white),
+          backgroundColor: WidgetStateProperty.all(t.surface),
         ),
         builder: (context, controller, child) {
           return ElevatedButton.icon(
@@ -89,8 +91,8 @@ class FilterButton extends HookConsumerWidget {
               }
             },
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.white),
-              foregroundColor: WidgetStateProperty.all(Colors.black),
+              backgroundColor: WidgetStateProperty.all(t.surface),
+              foregroundColor: WidgetStateProperty.all(t.textPrimary),
             ),
             icon: Icon(Icons.filter_list, size: 20),
           );
@@ -100,9 +102,9 @@ class FilterButton extends HookConsumerWidget {
           MenuItemButton(
             closeOnActivate: true,
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              iconColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
+              iconColor: t.textSecondary,
             ),
             child: Row(
               spacing: 8,
@@ -122,12 +124,12 @@ class FilterButton extends HookConsumerWidget {
               sortAndFilterNotifier.clearFilteredAssets();
             },
           ),
-          const Divider(height: 1, color: Colors.black),
+          Divider(height: 1, color: t.border),
 
           // Main "Assets" submenu item
           SubmenuButton(
             menuStyle: MenuStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.white),
+              backgroundColor: WidgetStateProperty.all(t.surface),
             ),
             leadingIcon: Icon(
               Icons.check,
@@ -136,18 +138,18 @@ class FilterButton extends HookConsumerWidget {
                   : Colors.transparent,
             ),
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              iconColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
+              iconColor: t.textSecondary,
             ),
             menuChildren: [
               // "Clear all" option
               MenuItemButton(
                 closeOnActivate: false,
                 style: MenuItemButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  iconColor: Colors.black,
+                  backgroundColor: t.surface,
+                  foregroundColor: t.textPrimary,
+                  iconColor: t.textSecondary,
                 ),
                 child: const Row(
                   spacing: 8,
@@ -165,15 +167,15 @@ class FilterButton extends HookConsumerWidget {
                   sortAndFilterNotifier.clearFilteredAssets();
                 },
               ),
-              const Divider(height: 1, color: Colors.black),
+              Divider(height: 1, color: t.border),
               // Status section
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 child: Text(
                   'Status',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.black,
+                    color: t.textPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -184,9 +186,9 @@ class FilterButton extends HookConsumerWidget {
                 return MenuItemButton(
                   closeOnActivate: false,
                   style: MenuItemButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    iconColor: Colors.black,
+                    backgroundColor: t.surface,
+                    foregroundColor: t.textPrimary,
+                    iconColor: t.textSecondary,
                   ),
                   child: Row(
                     spacing: 8,
@@ -213,15 +215,15 @@ class FilterButton extends HookConsumerWidget {
                   },
                 );
               }),
-              const Divider(height: 1, color: Colors.black),
+              Divider(height: 1, color: t.border),
               // Asset type section
-              const Padding(
+              Padding(
                 padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 child: Text(
                   'Type',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.black,
+                    color: t.textPrimary,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -237,9 +239,9 @@ class FilterButton extends HookConsumerWidget {
                 return MenuItemButton(
                   closeOnActivate: false,
                   style: MenuItemButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    iconColor: Colors.black,
+                    backgroundColor: t.surface,
+                    foregroundColor: t.textPrimary,
+                    iconColor: t.textSecondary,
                   ),
                   child: Row(
                     spacing: 8,
@@ -280,7 +282,7 @@ class FilterButton extends HookConsumerWidget {
           // Main "Folders" submenu item
           SubmenuButton(
             menuStyle: MenuStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.white),
+              backgroundColor: WidgetStateProperty.all(t.surface),
             ),
             leadingIcon: Icon(
               Icons.check,
@@ -289,18 +291,18 @@ class FilterButton extends HookConsumerWidget {
                   : Colors.transparent,
             ),
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              iconColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
+              iconColor: t.textSecondary,
             ),
             menuChildren: [
               // "Clear all" option
               MenuItemButton(
                 closeOnActivate: false,
                 style: MenuItemButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  iconColor: Colors.black,
+                  backgroundColor: t.surface,
+                  foregroundColor: t.textPrimary,
+                  iconColor: t.textSecondary,
                 ),
                 child: Row(
                   spacing: 8,
@@ -321,7 +323,7 @@ class FilterButton extends HookConsumerWidget {
 
               // Divider between "Clear all" and individual folders
               if (folders.isNotEmpty)
-                const Divider(height: 1, color: Colors.black),
+                Divider(height: 1, color: t.border),
 
               // Individual folder options
               ...folders.map((folder) {
@@ -330,9 +332,9 @@ class FilterButton extends HookConsumerWidget {
                 return MenuItemButton(
                   closeOnActivate: false,
                   style: MenuItemButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    iconColor: Colors.black,
+                    backgroundColor: t.surface,
+                    foregroundColor: t.textPrimary,
+                    iconColor: t.textSecondary,
                   ),
                   child: Row(
                     spacing: 8,
@@ -389,21 +391,21 @@ class FilterButton extends HookConsumerWidget {
                     : Colors.transparent,
               ),
               menuStyle: MenuStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.white),
+                backgroundColor: WidgetStateProperty.all(t.surface),
               ),
               style: MenuItemButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                iconColor: Colors.black,
+                backgroundColor: t.surface,
+                foregroundColor: t.textPrimary,
+                iconColor: t.textSecondary,
               ),
               menuChildren: [
                 // "Clear all" option
                 MenuItemButton(
                   closeOnActivate: false,
                   style: MenuItemButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    iconColor: Colors.black,
+                    backgroundColor: t.surface,
+                    foregroundColor: t.textPrimary,
+                    iconColor: t.textSecondary,
                   ),
                   child: Row(
                     spacing: 8,
@@ -423,7 +425,7 @@ class FilterButton extends HookConsumerWidget {
                 ),
 
                 // Divider between "Clear all" and backup status options
-                const Divider(height: 1, color: Colors.black),
+                Divider(height: 1, color: t.border),
 
                 // Generate backup status options dynamically from enum
                 ...ExistingBackupStatusEnum.values.map((status) {
@@ -433,9 +435,9 @@ class FilterButton extends HookConsumerWidget {
                   return MenuItemButton(
                     closeOnActivate: false,
                     style: MenuItemButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      iconColor: Colors.black,
+                      backgroundColor: t.surface,
+                      foregroundColor: t.textPrimary,
+                      iconColor: t.textSecondary,
                     ),
                     child: Row(
                       spacing: 8,

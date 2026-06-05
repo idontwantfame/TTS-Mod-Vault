@@ -221,38 +221,41 @@ class _SelectedModViewComponent extends HookConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () =>
-              ref.read(detailPanelExpandedProvider.notifier).set(false),
-          child: Container(
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: Colors.white, width: 2),
-              ),
+        Container(
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(color: Colors.white, width: 2),
             ),
-            alignment: Alignment.topLeft,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: AppTooltip(
-                    message: 'Click to collapse panel',
-                    child: Text(
-                      title,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+          ),
+          alignment: Alignment.topLeft,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
-                  child: HelpTooltip(),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
+                child: HelpTooltip(),
+              ),
+              AppTooltip(
+                message: 'Collapse details panel',
+                child: IconButton(
+                  icon: const Icon(Icons.chevron_right, size: 20),
+                  onPressed: () =>
+                      ref.read(detailPanelExpandedProvider.notifier).set(false),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  color: Colors.white54,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
         Container(
