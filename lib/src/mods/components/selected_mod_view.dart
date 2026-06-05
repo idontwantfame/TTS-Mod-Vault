@@ -285,7 +285,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                       style: MenuItemButton.styleFrom(
                         backgroundColor: t.surface,
                         foregroundColor: t.textPrimary,
-                        iconColor: Colors.black,
+                        iconColor: t.textSecondary,
                       ),
                       child: Row(
                         spacing: 8,
@@ -343,18 +343,18 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                             fontWeight: FontWeight.w500,
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: t.surfaceElevated,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide(color: t.border),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide(color: t.border),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide(color: t.accent, width: 1.5),
                           ),
                         ),
                         onChanged: (value) => searchQuery.value = value,
@@ -404,8 +404,8 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                   onSelected: (selected) {
                     selectedAssetTypeFilter.value = selected ? type : null;
                   },
-                  selectedColor: Colors.white,
-                  checkmarkColor: Colors.white,
+                  selectedColor: t.accent,
+                  checkmarkColor: t.surface,
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 7),
                   shape: RoundedRectangleBorder(
@@ -594,10 +594,10 @@ class _AudioAssetsButton extends ConsumerWidget {
                   },
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(
-                hasOverride ? Colors.blue : Colors.white,
+                hasOverride ? t.accent : t.surfaceElevated,
               ),
               foregroundColor: WidgetStateProperty.all(
-                hasOverride ? Colors.white : Colors.black,
+                hasOverride ? t.surface : t.textPrimary,
               ),
             ),
             padding: EdgeInsets.zero, // removes default padding

@@ -393,13 +393,6 @@ enum ModListStyle { richRows, gridCards, compact }
 
 enum ModListDensity { compact, defaultDensity, comfortable }
 
-class _BoolNotifier extends StateNotifier<bool> {
-  _BoolNotifier(super.state);
-  void toggle() => state = !state;
-  // ignore: use_setters_to_change_properties
-  void set(bool v) => state = v;
-}
-
 class _DoubleNotifier extends StateNotifier<double> {
   _DoubleNotifier(super.state);
   // ignore: use_setters_to_change_properties
@@ -418,11 +411,7 @@ class ModListDensityNotifier extends StateNotifier<ModListDensity> {
   void set(ModListDensity d) => state = d;
 }
 
-final detailPanelExpandedProvider =
-    StateNotifierProvider<_BoolNotifier, bool>((ref) {
-  final saved = ref.read(storageProvider).getUiPref(Storage.detailPanelExpandedKey);
-  return _BoolNotifier(saved == 'true'); // default: hidden
-});
+final detailPanelExpandedProvider = StateProvider<bool>((ref) => false);
 
 final logPanelHeightProvider =
     StateNotifierProvider<_DoubleNotifier, double>((ref) {
@@ -454,8 +443,6 @@ final modListDensityProvider =
 final uiPrefPersistProvider = Provider<void>((ref) {
   ref.keepAlive();
   final storage = ref.read(storageProvider);
-  ref.listen<bool>(detailPanelExpandedProvider,
-      (_, v) => storage.saveUiPref(Storage.detailPanelExpandedKey, '$v'));
   ref.listen<double>(logPanelHeightProvider,
       (_, v) => storage.saveUiPref(Storage.logPanelHeightKey, '$v'));
   ref.listen<ModListStyle>(modListStyleProvider,

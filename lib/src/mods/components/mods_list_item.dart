@@ -106,7 +106,7 @@ class ModsListItem extends HookConsumerWidget {
           } else {
             // Normal left-click: Single selection
             ref.read(modsProvider.notifier).setSelectedMod(mod);
-            ref.read(detailPanelExpandedProvider.notifier).set(true);
+            ref.read(detailPanelExpandedProvider.notifier).state = true;
           }
         }
       },

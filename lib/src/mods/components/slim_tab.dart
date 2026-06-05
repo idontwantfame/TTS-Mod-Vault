@@ -15,7 +15,7 @@ class SlimTab extends ConsumerWidget {
     return AppTooltip(
       message: 'Click to show mod details',
       child: GestureDetector(
-        onTap: () => ref.read(detailPanelExpandedProvider.notifier).toggle(),
+        onTap: () => ref.read(detailPanelExpandedProvider.notifier).state = !ref.read(detailPanelExpandedProvider),
         child: Container(
           width: 28,
           decoration: BoxDecoration(

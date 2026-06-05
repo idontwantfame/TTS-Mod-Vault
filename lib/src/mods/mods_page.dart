@@ -334,7 +334,7 @@ class _DetailPanelArea extends ConsumerWidget {
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () =>
-                ref.read(detailPanelExpandedProvider.notifier).set(false),
+                ref.read(detailPanelExpandedProvider.notifier).state = false,
             child: MouseRegion(
               cursor: SystemMouseCursors.click,
               child: Container(

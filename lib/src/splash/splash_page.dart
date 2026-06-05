@@ -14,7 +14,6 @@ import 'package:tts_mod_vault/src/splash/components/select_directories_widget.da
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         appThemeProvider,
-        detailPanelExpandedProvider,
         directoriesProvider,
         loaderProvider,
         loadingMessageProvider,
@@ -135,11 +134,6 @@ void _applyUiPrefs(WidgetRef ref) {
   if (height != null) {
     ref.read(logPanelHeightProvider.notifier).set(
         double.tryParse(height) ?? 280.0);
-  }
-
-  final expanded = s.getUiPref(Storage.detailPanelExpandedKey);
-  if (expanded != null) {
-    ref.read(detailPanelExpandedProvider.notifier).set(expanded == 'true');
   }
 
   final style = s.getUiPref(Storage.modListStyleKey);
