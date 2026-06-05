@@ -18,10 +18,12 @@ import 'package:tts_mod_vault/src/mods/components/components.dart'
         CustomTooltip;
 import 'package:tts_mod_vault/src/mods/components/filter_button.dart'
     show FilterButton;
+import 'package:tts_mod_vault/src/mods/components/slim_tab.dart' show SlimTab;
 import 'package:tts_mod_vault/src/logging/logging_console.dart'
     show LoggingConsole;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
+        detailPanelExpandedProvider,
         filteredModsProvider,
         loadingMessageProvider,
         modsProvider,
@@ -35,19 +37,23 @@ class ModsPage extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final loadingMessage = ref.watch(loadingMessageProvider);
     final mods = ref.watch(modsProvider);
+    final detailExpanded = ref.watch(detailPanelExpandedProvider);
 
     return mods.when(
       data: (data) {
         return Row(
           children: [
             Expanded(
-              flex: 2,
               child: ModsColumn(),
             ),
-            Expanded(
-              flex: 1,
-              child: SelectedModView(),
-            ),
+            if (detailExpanded) ...[
+              const VerticalDivider(width: 1),
+              SizedBox(
+                width: MediaQuery.of(context).size.width / 3,
+                child: SelectedModView(),
+              ),
+            ],
+            if (!detailExpanded) const SlimTab(),
           ],
         );
       },

@@ -17,6 +17,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart'
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        detailPanelExpandedProvider,
         modsProvider,
         multiModsProvider,
         settingsProvider;
@@ -101,6 +102,7 @@ class ModsGridCard extends HookConsumerWidget {
             } else {
               // Normal left-click: Single selection
               ref.read(modsProvider.notifier).setSelectedMod(mod);
+              ref.read(detailPanelExpandedProvider.notifier).set(true);
             }
           }
         },

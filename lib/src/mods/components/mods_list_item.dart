@@ -15,6 +15,7 @@ import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
         appThemeDataProvider,
+        detailPanelExpandedProvider,
         modListDensityProvider,
         ModListDensity,
         modsProvider,
@@ -105,6 +106,7 @@ class ModsListItem extends HookConsumerWidget {
           } else {
             // Normal left-click: Single selection
             ref.read(modsProvider.notifier).setSelectedMod(mod);
+            ref.read(detailPanelExpandedProvider.notifier).set(true);
           }
         }
       },
