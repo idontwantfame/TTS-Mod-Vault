@@ -245,7 +245,8 @@ class Storage {
   }
 
   // UI PREFERENCES
-  String? getUiPref(String key) => _appDataBox.get(key);
+  // Returns null if storage isn't initialized yet (safe to call before initializeStorage)
+  String? getUiPref(String key) => _initialized ? _appDataBox.get(key) : null;
   Future<void> saveUiPref(String key, String value) => _appDataBox.put(key, value);
 
   Future<void> pruneOrphanedModData(Set<String> validJsonFileNames) async {
