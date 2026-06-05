@@ -113,12 +113,7 @@ class ModsColumn extends ConsumerWidget {
           child: Row(
             spacing: 4,
             children: [
-              // Search
-              Expanded(
-                child: Search(searchQueryProvider: modsSearchQueryProvider),
-              ),
-              _Divider(),
-              // Sort & Filter
+              // Sort & Filter — left-aligned
               _ToolbarBtn(icon: Icons.sort, tooltip: TooltipStrings.toolbarSort,
                   child: SortButton()),
               _ToolbarBtn(icon: Icons.filter_list,
@@ -228,6 +223,12 @@ class ModsColumn extends ConsumerWidget {
 • ${Platform.isMacOS ? '⌘' : 'Ctrl'}+click to multi-select""",
                 tier: AppTooltipTier.complex,
                 child: Icon(Icons.info_outline, size: 16, color: t.textMuted),
+              ),
+              // Search — floated right
+              const Spacer(),
+              SizedBox(
+                width: 220,
+                child: Search(searchQueryProvider: modsSearchQueryProvider),
               ),
             ],
           ),

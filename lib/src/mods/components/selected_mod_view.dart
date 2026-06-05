@@ -222,21 +222,22 @@ class _SelectedModViewComponent extends HookConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         GestureDetector(
+          behavior: HitTestBehavior.opaque,
           onTap: () =>
               ref.read(detailPanelExpandedProvider.notifier).set(false),
-          child: Tooltip(
-            message: 'Click to collapse details panel',
-            child: Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: Colors.white, width: 2),
-                ),
+          child: Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(color: Colors.white, width: 2),
               ),
-              alignment: Alignment.topLeft,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(
+            ),
+            alignment: Alignment.topLeft,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: AppTooltip(
+                    message: 'Click to collapse panel',
                     child: Text(
                       title,
                       style: const TextStyle(
@@ -245,12 +246,12 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
-                    child: HelpTooltip(),
-                  ),
-                ],
-              ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, left: 4, right: 4),
+                  child: HelpTooltip(),
+                ),
+              ],
             ),
           ),
         ),
