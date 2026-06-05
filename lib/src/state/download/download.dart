@@ -200,7 +200,7 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
                 : 'All assets already present for: ${mod.saveName}');
 
     final Set<String> allDownloaded = {};
-    const refreshEvery = 50;
+    const refreshEvery = 25;
     int sinceLastRefresh = 0;
 
     for (final (assets, type) in [
