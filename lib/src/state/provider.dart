@@ -200,7 +200,6 @@ final actionInProgressProvider = Provider<bool>((ref) {
       cleanUpStatus != CleanUpStatusEnum.idle ||
       backupStatus != BackupStatusEnum.idle ||
       bulkActionStatus != BulkActionsStatusEnum.idle ||
-      isDownloading ||
       modsAsyncValue is AsyncLoading ||
       deletingBackup ||
       refreshingSharedAssets;
