@@ -19,7 +19,8 @@ import 'package:tts_mod_vault/src/utils.dart'
 import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
     show BulkBackupBehaviorEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show actionInProgressProvider, bulkActionsProvider, filteredModsProvider;
+    show actionInProgressProvider, appThemeDataProvider, bulkActionsProvider,
+        filteredModsProvider;
 
 class BulkActionsMenu extends HookConsumerWidget {
   const BulkActionsMenu({super.key});
@@ -72,19 +73,20 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final actionInProgress = ref.watch(actionInProgressProvider);
     final selectedModType = ref.watch(selectedModTypeProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     return MenuAnchor(
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.white),
+        backgroundColor: WidgetStateProperty.all(t.surface),
       ),
       menuChildren: <Widget>[
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.download, color: Colors.black),
-          child: Text('Download all', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.download, color: t.textPrimary),
+          child: Text('Download all', style: TextStyle(color: t.textPrimary)),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -95,11 +97,11 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.archive, color: Colors.black),
-          child: Text('Backup all', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.archive, color: t.textPrimary),
+          child: Text('Backup all', style: TextStyle(color: t.textPrimary)),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -122,13 +124,13 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.download, color: Colors.black),
-          trailingIcon: Icon(Icons.archive, color: Colors.black),
+          leadingIcon: Icon(Icons.download, color: t.textPrimary),
+          trailingIcon: Icon(Icons.archive, color: t.textPrimary),
           child: Text('Download & backup all',
-              style: TextStyle(color: Colors.black)),
+              style: TextStyle(color: t.textPrimary)),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -154,12 +156,12 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
         if (selectedModType == ModTypeEnum.mod)
           MenuItemButton(
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
             ),
-            leadingIcon: Icon(Icons.update, color: Colors.black),
+            leadingIcon: Icon(Icons.update, color: t.textPrimary),
             child:
-                Text('Update all mods', style: TextStyle(color: Colors.black)),
+                Text('Update all mods', style: TextStyle(color: t.textPrimary)),
             onPressed: () {
               if (actionInProgress) return;
 
@@ -186,12 +188,12 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
           ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.delete, color: Colors.black),
+          leadingIcon: Icon(Icons.delete, color: t.textPrimary),
           child:
-              Text('Delete all assets', style: TextStyle(color: Colors.black)),
+              Text('Delete all assets', style: TextStyle(color: t.textPrimary)),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -214,11 +216,11 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
           tier: AppTooltipTier.complex,
           child: MenuItemButton(
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
             ),
-            leadingIcon: Icon(Icons.link, color: Colors.black),
-            child: Text('Check all URLs', style: TextStyle(color: Colors.black)),
+            leadingIcon: Icon(Icons.link, color: t.textPrimary),
+            child: Text('Check all URLs', style: TextStyle(color: t.textPrimary)),
             onPressed: () {
               if (actionInProgress) return;
               ref
@@ -229,11 +231,11 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.edit, color: Colors.black),
-          child: Text('Update all URLs', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.edit, color: t.textPrimary),
+          child: Text('Update all URLs', style: TextStyle(color: t.textPrimary)),
           onPressed: () {
             if (actionInProgress) return;
 
