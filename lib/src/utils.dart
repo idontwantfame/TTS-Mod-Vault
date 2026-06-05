@@ -8,7 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart' show WidgetRef;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:mime/mime.dart' show lookupMimeType;
 import 'package:open_filex/open_filex.dart' show OpenFilex;
-import 'package:tts_mod_vault/src/mods/components/custom_tooltip.dart';
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/mods/enums/context_menu_action_enum.dart'
     show ContextMenuActionEnum;
 import 'package:tts_mod_vault/src/state/backup/models/existing_backup_model.dart'
@@ -277,7 +277,7 @@ Future<void> showConfirmDialogWithCheckbox(
                     children: [
                       Text(title, style: TextStyle(fontSize: 18)),
                       if (showWarning)
-                        CustomTooltip(
+                        AppTooltip(
                             message: warningText,
                             child: Icon(Icons.warning_amber_rounded, size: 32)),
                     ],
@@ -305,7 +305,7 @@ Future<void> showConfirmDialogWithCheckbox(
                         checkboxLabel,
                         style: TextStyle(fontSize: 16),
                       ),
-                      CustomTooltip(
+                      AppTooltip(
                         message: checkboxInfoMessage,
                         child: Icon(
                           Icons.info_outline,

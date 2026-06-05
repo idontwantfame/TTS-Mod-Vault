@@ -21,7 +21,7 @@ import 'package:tts_mod_vault/src/state/provider.dart'
         modsProvider,
         multiModsProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart'
-    show AppBadge, AppBadgeVariant, AppCard;
+    show AppBadge, AppBadgeVariant, AppCard, AppTooltip, TooltipStrings;
 import 'package:tts_mod_vault/src/utils.dart' show showModContextMenu;
 
 class ModsListItem extends HookConsumerWidget {
@@ -142,7 +142,16 @@ class ModsListItem extends HookConsumerWidget {
               ),
             ),
             const SizedBox(width: 8),
-            _modBadge(mod),
+            AppTooltip(
+              message: mod.missingAssetCount > 0
+                  ? TooltipStrings.badgeMissing
+                  : mod.backupStatus == ExistingBackupStatusEnum.upToDate
+                      ? TooltipStrings.badgeBacked
+                      : mod.assetCount > 0
+                          ? TooltipStrings.badgeAllAssets
+                          : TooltipStrings.badgeNoAssets,
+              child: _modBadge(mod),
+            ),
           ],
         ),
       ),

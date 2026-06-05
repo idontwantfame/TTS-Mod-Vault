@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useMemoized;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppTooltip, AppTooltipTier, TooltipStrings;
 
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
@@ -49,11 +49,10 @@ class BulkActionsMenu extends HookConsumerWidget {
           searchQuery.isNotEmpty;
     }, [selectedFolders, sortAndFilterState, searchQuery]);
 
-    return CustomTooltip(
+    return AppTooltip(
       message: bulkActionLimited
           ? 'Bulk actions will apply only to the current selection because of search and/or filters'
           : '',
-      waitDuration: Duration(milliseconds: 750),
       child: Badge(
         label: Text('!'),
         backgroundColor: Colors.grey[600],
@@ -210,19 +209,23 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
             );
           },
         ),
-        MenuItemButton(
-          style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+        AppTooltip(
+          message: TooltipStrings.bulkCheckUrls,
+          tier: AppTooltipTier.complex,
+          child: MenuItemButton(
+            style: MenuItemButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+            ),
+            leadingIcon: Icon(Icons.link, color: Colors.black),
+            child: Text('Check all URLs', style: TextStyle(color: Colors.black)),
+            onPressed: () {
+              if (actionInProgress) return;
+              ref
+                  .read(bulkActionsProvider.notifier)
+                  .checkUrlsAllMods(ref.read(filteredModsProvider));
+            },
           ),
-          leadingIcon: Icon(Icons.link, color: Colors.black),
-          child: Text('Check all URLs', style: TextStyle(color: Colors.black)),
-          onPressed: () {
-            if (actionInProgress) return;
-            ref
-                .read(bulkActionsProvider.notifier)
-                .checkUrlsAllMods(ref.read(filteredModsProvider));
-          },
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(

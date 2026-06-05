@@ -9,8 +9,6 @@ import 'package:flutter_hooks/flutter_hooks.dart'
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show ConsumerWidget, HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as path;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
 import 'package:tts_mod_vault/src/settings/editable_list.dart'
     show EditableStringList;
 import 'package:tts_mod_vault/src/state/directories/directories.dart'
@@ -31,7 +29,7 @@ import 'package:tts_mod_vault/src/state/provider.dart'
         selectedModTypeProvider,
         settingsProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart'
-    show AppThemeData, AppThemeId, AppTooltip;
+    show AppThemeData, AppThemeId, AppTooltip, AppTooltipTier, TooltipStrings;
 import 'package:tts_mod_vault/src/models/url_replacement_preset.dart'
     show UrlReplacementPreset;
 import 'package:tts_mod_vault/src/state/settings/settings_state.dart'
@@ -390,7 +388,7 @@ class SettingsFoldersColumn extends StatelessWidget {
             spacing: 4,
             children: [
               SectionHeader(title: "Mods Folder"),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     'All subfolders of the chosen folder are included\nData will be refreshed if saving changes to a folder',
                 child: Icon(Icons.info_outline),
@@ -452,7 +450,7 @@ class SettingsFoldersColumn extends StatelessWidget {
             spacing: 4,
             children: [
               SectionHeader(title: "Saves Folder"),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     'All subfolders of the chosen folder are included\nData will be refreshed if saving changes to a folder',
                 child: Icon(Icons.info_outline),
@@ -516,7 +514,7 @@ class SettingsFoldersColumn extends StatelessWidget {
               spacing: 4,
               children: [
                 const Text('Allow custom Saves folder path'),
-                CustomTooltip(
+                AppTooltip(
                   message:
                       'When enabled, the Saves folder is not required to be named "Saves"',
                   child: Icon(Icons.info_outline),
@@ -537,7 +535,7 @@ class SettingsFoldersColumn extends StatelessWidget {
             spacing: 4,
             children: [
               SectionHeader(title: "Backups Folder"),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     'Backup Folder is required for Backup State feature to work after a restart or data refresh\nData will be refreshed if saving changes to a folder',
                 child: Icon(Icons.info_outline),
@@ -643,7 +641,7 @@ class SettingsFeaturesColumn extends StatelessWidget {
             spacing: 4,
             children: [
               const Text('Show Saved Objects'),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     "Show Saved Objects next to Mods and Saves, manual refresh of data is needed after enabling if TTS Mod Vault was opened while this setting was disabled",
                 child: Icon(Icons.info_outline),
@@ -666,7 +664,7 @@ class SettingsFeaturesColumn extends StatelessWidget {
                 'Force JSON name in Backup filename',
                 overflow: TextOverflow.ellipsis,
               ),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     """By default, the JSON filename is included in the Mod backup filename only if the JSON filename is a number.
 This setting has no effect on backups of Saves and Saved Objects because they already always include the JSON filename.
@@ -699,7 +697,7 @@ the JSON filename (ExampleGame.ttsmod).""",
             spacing: 4,
             children: [
               const Text('Show Backup State'),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     "Backups Folder is required to show Backup State after a restart or data refresh",
                 child: Icon(Icons.info_outline),
@@ -719,7 +717,7 @@ the JSON filename (ExampleGame.ttsmod).""",
             spacing: 4,
             children: [
               const Text('Exclude audio assets'),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     "When enabled, audio assets will not be available for download and backup unless modified on per-mod basis\nData will be refreshed after changing this setting",
                 child: Icon(Icons.info_outline),
@@ -1020,7 +1018,7 @@ class SettingsInterfaceColumn extends ConsumerWidget {
               'Asset URL font size',
               style: TextStyle(fontSize: 16),
             ),
-            CustomTooltip(
+            AppTooltip(
               message:
                   "Range: 1-99 (up to 1 decimal place)\nDefault value: 12.0",
               child: Icon(Icons.info_outline),
@@ -1098,7 +1096,7 @@ class SettingsNetworkColumn extends HookConsumerWidget {
                       'Number of concurrent downloads',
                       style: TextStyle(fontSize: 16),
                     ),
-                    CustomTooltip(
+                    AppTooltip(
                       message:
                           "Lower the value if you experience working URLs failing to download when downloading from multiple URLs at once\nDefault value: 5",
                       child: Icon(Icons.info_outline),
@@ -1161,9 +1159,9 @@ class SettingsNetworkColumn extends HookConsumerWidget {
                       'Proxy URL (optional)',
                       style: TextStyle(fontSize: 16),
                     ),
-                    CustomTooltip(
-                      message:
-                          'Enter a proxy URL to route network requests through a proxy server\nFormat: http://proxy.example.com:8080 or socks5://proxy.example.com:1080',
+                    AppTooltip(
+                      message: TooltipStrings.proxyUrl,
+                      tier: AppTooltipTier.complex,
                       child: Icon(Icons.info_outline),
                     ),
                   ],

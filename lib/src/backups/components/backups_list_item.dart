@@ -7,8 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as p;
 
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/backup/models/existing_backup_model.dart'
     show ExistingBackup;
 import 'package:tts_mod_vault/src/utils.dart'
@@ -109,7 +108,7 @@ class BackupsListItem extends HookConsumerWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    CustomTooltip(
+                    AppTooltip(
                       message:
                           "${hasMatchingMod ? "Imported" : "Not imported"}\n${backup.fileSizeMB}\n${backup.totalAssetCount} asset files\n${formatTimestamp(backup.lastModifiedTimestamp.toString())}",
                       child: Row(

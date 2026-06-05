@@ -14,8 +14,9 @@ import 'package:tts_mod_vault/src/mods/components/components.dart'
         ModsView,
         BulkActionsProgressBar,
         SortButton,
-        BulkActionsMenu,
-        CustomTooltip;
+        BulkActionsMenu;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppTooltip, AppTooltipTier, TooltipStrings;
 import 'package:tts_mod_vault/src/mods/components/filter_button.dart'
     show FilterButton;
 import 'package:tts_mod_vault/src/mods/components/slim_tab.dart' show SlimTab;
@@ -101,9 +102,9 @@ class ModsColumn extends ConsumerWidget {
             children: [
               ModsSelector(),
               Search(searchQueryProvider: modsSearchQueryProvider),
-              SortButton(),
-              FilterButton(),
-              BulkActionsMenu(),
+              AppTooltip(message: TooltipStrings.toolbarSort, child: SortButton()),
+              AppTooltip(message: TooltipStrings.toolbarFilter, child: FilterButton()),
+              AppTooltip(message: TooltipStrings.toolbarBulk, child: BulkActionsMenu()),
               if (total > 0)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -119,7 +120,7 @@ class ModsColumn extends ConsumerWidget {
                     ),
                   ),
                 ),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     """• Left-click a ${type.label} to see assets and actions
 • Right-click a ${type.label} to see additional actions
@@ -127,7 +128,7 @@ class ModsColumn extends ConsumerWidget {
 • Hovering over the backup icon on ${type.label}s shows times and file count mismatches
 • Hovering over the Mods/Saves selector shows the number of Mods and Saves
 • Bulk actions are affected by search and filters""",
-                messageTextStyle: TextStyle(fontSize: 16, height: 2),
+                tier: AppTooltipTier.complex,
                 child: Icon(
                   Icons.info_outline,
                   size: 32,

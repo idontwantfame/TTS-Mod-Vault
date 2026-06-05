@@ -14,9 +14,9 @@ import 'package:tts_mod_vault/src/mods/components/components.dart'
         AssetsUrl,
         DownloadProgressBar,
         HelpTooltip,
-        CustomTooltip,
         BackupProgressBar,
         MultiSelectView;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/asset/models/asset_model.dart'
     show Asset;
 import 'package:tts_mod_vault/src/state/backup/backup_state.dart'
@@ -556,7 +556,7 @@ class _AudioAssetsButton extends ConsumerWidget {
     final ignoreAudioAssets = ref.watch(settingsProvider).ignoreAudioAssets;
     final actionInProgress = ref.watch(actionInProgressProvider);
 
-    return CustomTooltip(
+    return AppTooltip(
       message: switch (selectedMod.audioVisibility) {
         AudioAssetVisibility.useGlobalSetting =>
           'Using global setting (${ignoreAudioAssets ? "hidden" : "shown"})',
@@ -773,7 +773,7 @@ class _AudioAssetsButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomTooltip(
+    return AppTooltip(
       message: "View Images",
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
@@ -803,7 +803,7 @@ class _MissingFilesButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomTooltip(
+    return AppTooltip(
       message: "Download all missing ${assetType.label.toLowerCase()}",
       child: MouseRegion(
         cursor: SystemMouseCursors.click,

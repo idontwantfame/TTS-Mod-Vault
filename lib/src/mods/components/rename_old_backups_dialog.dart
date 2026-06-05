@@ -6,8 +6,7 @@ import 'package:flutter_hooks/flutter_hooks.dart'
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as p;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show directoriesProvider, existingBackupsProvider, loaderProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart'
@@ -70,7 +69,7 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
                   children: [
                     Text(
                         'Rename mod backups created by TTS Mod Vault versions 1.0.0 - 1.1.0 to match backup naming format in 1.2.0 to work with Backup State feature'),
-                    CustomTooltip(
+                    AppTooltip(
                       message:
                           'TTS Mod Vault versions 1.0.0 - 1.1.0 used a mod backup name format that did not fully match the one used by TTS Mod Backup.\n\n'
                           'In version 1.2.0 the Backup State feature has been added and made to work with mod backups created by TTS Mod Backup.\n'
@@ -138,9 +137,7 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
                                       children: [
                                         SizedBox.shrink(),
                                         Expanded(
-                                          child: CustomTooltip(
-                                            waitDuration:
-                                                Duration(milliseconds: 350),
+                                          child: AppTooltip(
                                             message: data.fixed,
                                             child: Text(
                                               data.original,
@@ -152,9 +149,7 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
                                           ),
                                         ),
                                         Expanded(
-                                          child: CustomTooltip(
-                                            waitDuration:
-                                                Duration(milliseconds: 350),
+                                          child: AppTooltip(
                                             message: data.fixed,
                                             child: Text(
                                               data.fixed,
@@ -222,7 +217,7 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
                       onPressed: () => Navigator.pop(context),
                       variant: AppButtonVariant.secondary,
                     ),
-                    CustomTooltip(
+                    AppTooltip(
                       message:
                           'Data will be refreshed after renaming files.\nIf a file under new name already exists it will be skipped.',
                       child: AppButton(

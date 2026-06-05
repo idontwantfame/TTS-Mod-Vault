@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useMemoized;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef, AsyncValueX;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
@@ -68,9 +67,8 @@ class ModsSelector extends HookConsumerWidget {
       ];
     }, [showSavedObjects]);
 
-    return CustomTooltip(
-      message: tooltipMessage,
-      waitDuration: const Duration(milliseconds: 300),
+    return AppTooltip(
+      message: tooltipMessage ?? '',
       child: SizedBox(
         height: 32,
         child: ToggleButtons(

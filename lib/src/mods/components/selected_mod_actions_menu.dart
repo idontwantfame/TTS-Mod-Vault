@@ -5,6 +5,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
 import 'dart:ui' show ImageFilter;
 import 'package:tts_mod_vault/src/mods/components/components.dart'
     show showUpdateUrlsDialog;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppTooltip, AppTooltipTier, TooltipStrings;
 import 'package:tts_mod_vault/src/mods/components/url_check_results_dialog.dart'
     show UrlCheckResultsDialog;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show Mod;
@@ -94,56 +96,60 @@ class SelectedModActionsMenu extends HookConsumerWidget {
             }
           },
         ),
-        MenuItemButton(
-          style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-          ),
-          leadingIcon: Icon(Icons.refresh, color: Colors.black),
-          child: Text('Re-download all assets',
-              style: TextStyle(color: Colors.black)),
-          onPressed: () async {
-            if (actionInProgress) return;
+        AppTooltip(
+          message: TooltipStrings.redownloadAll,
+          tier: AppTooltipTier.complex,
+          child: MenuItemButton(
+            style: MenuItemButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: Colors.black,
+            ),
+            leadingIcon: Icon(Icons.refresh, color: Colors.black),
+            child: Text('Re-download all assets',
+                style: TextStyle(color: Colors.black)),
+            onPressed: () async {
+              if (actionInProgress) return;
 
-            final hasAssets = selectedMod.getAllAssets().isNotEmpty;
-            if (!hasAssets) return;
+              final hasAssets = selectedMod.getAllAssets().isNotEmpty;
+              if (!hasAssets) return;
 
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                child: AlertDialog(
-                  title: const Text('Re-download all assets?'),
-                  content: Text(
-                    'This will re-download all ${selectedMod.assetCount} assets for "${selectedMod.saveName}", overwriting existing files.\n\nContinue?',
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                  child: AlertDialog(
+                    title: const Text('Re-download all assets?'),
+                    content: Text(
+                      'This will re-download all ${selectedMod.assetCount} assets for "${selectedMod.saveName}", overwriting existing files.\n\nContinue?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: const Text('Re-download'),
+                      ),
+                    ],
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(false),
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      child: const Text('Re-download'),
-                    ),
-                  ],
                 ),
-              ),
-            );
+              );
 
-            if (confirmed != true) return;
-            if (!context.mounted) return;
+              if (confirmed != true) return;
+              if (!context.mounted) return;
 
-            final modsNotifier = ref.read(modsProvider.notifier);
-            final downloaded = await ref
-                .read(downloadProvider.notifier)
-                .redownloadAllFiles(selectedMod);
-            await modsNotifier.updateSelectedMod(selectedMod);
-            if (downloaded.isNotEmpty) {
-              await modsNotifier.refreshModsWithSharedAssets(downloaded,
-                  excludeJsonFileName: selectedMod.jsonFileName);
-            }
-          },
+              final modsNotifier = ref.read(modsProvider.notifier);
+              final downloaded = await ref
+                  .read(downloadProvider.notifier)
+                  .redownloadAllFiles(selectedMod);
+              await modsNotifier.updateSelectedMod(selectedMod);
+              if (downloaded.isNotEmpty) {
+                await modsNotifier.refreshModsWithSharedAssets(downloaded,
+                    excludeJsonFileName: selectedMod.jsonFileName);
+              }
+            },
+          ),
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
