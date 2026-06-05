@@ -5,7 +5,8 @@ import 'package:flutter_hooks/flutter_hooks.dart'
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, StateProvider, WidgetRef;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show actionInProgressProvider, selectedModTypeProvider;
+    show actionInProgressProvider, appThemeDataProvider, selectedModTypeProvider;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip, TooltipStrings;
 
 class Search extends HookConsumerWidget {
   final StateProvider<String> searchQueryProvider;
@@ -15,6 +16,7 @@ class Search extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedModType = ref.watch(selectedModTypeProvider);
+    final t = ref.watch(appThemeDataProvider);
     final controller = useTextEditingController();
     final focusNode = useFocusNode();
     final debounceTimer = useRef<Timer?>(null);
@@ -73,15 +75,13 @@ class Search extends HookConsumerWidget {
               focusNode: focusNode,
               autofocus: true,
               onChanged: onSearchChanged,
-              style: const TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w500,
-              ),
+              cursorColor: t.accent,
+              style: TextStyle(color: t.textPrimary, fontSize: 13),
               decoration: InputDecoration(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-                prefixIcon: const Icon(Icons.search, color: Colors.black),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 12),
+                prefixIcon: Icon(Icons.search, color: t.textMuted, size: 18),
                 suffixIcon: IconButton(
-                  icon: const Icon(Icons.clear, color: Colors.black, size: 17),
+                  icon: Icon(Icons.clear, color: t.textMuted, size: 16),
                   onPressed: () {
                     controller.clear();
                     debounceTimer.value?.cancel();
@@ -89,43 +89,43 @@ class Search extends HookConsumerWidget {
                     isExpanded.value = false;
                   },
                 ),
-                hintText: 'Search',
-                hintStyle: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w500,
-                ),
+                hintText: 'Search…',
+                hintStyle: TextStyle(color: t.textMuted, fontSize: 13),
                 filled: true,
-                fillColor: Colors.white,
+                fillColor: t.surfaceElevated,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(6),
+                  borderSide: BorderSide(color: t.border),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(6),
+                  borderSide: BorderSide(color: t.border),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(18),
-                  borderSide: BorderSide.none,
+                  borderRadius: BorderRadius.circular(6),
+                  borderSide: BorderSide(color: t.accent, width: 1.5),
                 ),
               ),
             ),
           )
-        : SizedBox(
-            height: 32,
-            width: 32,
-            child: ElevatedButton(
-              onPressed: () {
+        : AppTooltip(
+            message: TooltipStrings.toolbarSearch,
+            child: GestureDetector(
+              onTap: () {
                 isExpanded.value = true;
                 focusNode.requestFocus();
               },
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.white),
-                foregroundColor: WidgetStateProperty.all(Colors.black),
-                padding: WidgetStateProperty.all(EdgeInsets.zero),
-                shape: WidgetStateProperty.all(const CircleBorder()),
+              child: Container(
+                height: 32,
+                width: 32,
+                decoration: BoxDecoration(
+                  color: t.surfaceElevated,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: t.border),
+                ),
+                alignment: Alignment.center,
+                child: Icon(Icons.search, size: 16, color: t.textSecondary),
               ),
-              child: const Icon(Icons.search, size: 20),
             ),
           );
   }

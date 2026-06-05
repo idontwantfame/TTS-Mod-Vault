@@ -7,6 +7,7 @@ import 'package:tts_mod_vault/src/backups/components/backups_view.dart'
 import 'package:tts_mod_vault/src/backups/components/components.dart'
     show BackupSortButton, BackupFilterButton;
 import 'package:tts_mod_vault/src/mods/components/components.dart';
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show backupsSearchQueryProvider, filteredBackupsProvider;
 
@@ -53,9 +54,8 @@ class _BackupsTitle extends HookConsumerWidget {
       return "$backupsCount backups";
     }, [backupsCount]);
 
-    return CustomTooltip(
+    return AppTooltip(
       message: tooltipMessage,
-      waitDuration: const Duration(milliseconds: 300),
       child: SizedBox(
         height: 32,
         child: ToggleButtons(

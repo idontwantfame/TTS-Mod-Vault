@@ -14,9 +14,9 @@ import 'package:tts_mod_vault/src/mods/components/components.dart'
         AssetsUrl,
         DownloadProgressBar,
         HelpTooltip,
-        CustomTooltip,
         BackupProgressBar,
         MultiSelectView;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/asset/models/asset_model.dart'
     show Asset;
 import 'package:tts_mod_vault/src/state/backup/backup_state.dart'
@@ -28,6 +28,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart'
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
         backupProvider,
         downloadProvider,
         modsProvider,
@@ -78,6 +79,7 @@ class SelectedModView extends HookConsumerWidget {
     final selectedMod = ref.watch(selectedModProvider);
     final selectedModType = ref.watch(selectedModTypeProvider);
     final multiSelectMods = ref.watch(multiModsProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     // Show multi-select view when 2+ mods selected
     if (multiSelectMods.length >= 2) {
@@ -92,7 +94,7 @@ class SelectedModView extends HookConsumerWidget {
             alignment: Alignment.topLeft,
             decoration: BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: Colors.white, width: 2),
+                bottom: BorderSide(color: t.border, width: 2),
               ),
             ),
             child: Row(
@@ -177,6 +179,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
 
     final downloadState = ref.watch(downloadProvider);
     final backupStatus = ref.watch(backupProvider).status;
+    final t = ref.watch(appThemeDataProvider);
 
     final listItems = useMemoized(() => _buildListItems(), [selectedMod]);
     final availableAssetTypes = useMemoized(() {
@@ -223,7 +226,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
         Container(
           decoration: BoxDecoration(
             border: Border(
-              bottom: BorderSide(color: Colors.white, width: 2),
+              bottom: BorderSide(color: t.border, width: 2),
             ),
           ),
           alignment: Alignment.topLeft,
@@ -253,9 +256,11 @@ class _SelectedModViewComponent extends HookConsumerWidget {
             spacing: 8,
             runSpacing: 4,
             children: [
-              MenuAnchor(
+              AppTooltip(
+                message: 'Filter assets by download status',
+                child: MenuAnchor(
                 style: MenuStyle(
-                  backgroundColor: WidgetStateProperty.all(Colors.white),
+                  backgroundColor: WidgetStateProperty.all(t.surface),
                 ),
                 builder: (context, controller, child) {
                   return ElevatedButton.icon(
@@ -267,8 +272,8 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                       }
                     },
                     style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.all(Colors.white),
-                      foregroundColor: WidgetStateProperty.all(Colors.black),
+                      backgroundColor: WidgetStateProperty.all(t.surface),
+                      foregroundColor: WidgetStateProperty.all(t.textPrimary),
                     ),
                     icon: Icon(Icons.arrow_drop_down, size: 26),
                     label: Text(downloadFilter.value.label),
@@ -280,9 +285,9 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                     return MenuItemButton(
                       closeOnActivate: true,
                       style: MenuItemButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        iconColor: Colors.black,
+                        backgroundColor: t.surface,
+                        foregroundColor: t.textPrimary,
+                        iconColor: t.textSecondary,
                       ),
                       child: Row(
                         spacing: 8,
@@ -300,7 +305,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                     );
                   }),
                 ],
-              ),
+              )),
               if (selectedMod.hasAudioAssets) ...[
                 _AudioAssetsButton(selectedMod: selectedMod),
               ],
@@ -313,19 +318,19 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                         focusNode: searchFocusNode,
                         autofocus: true,
                         style: TextStyle(
-                          color: Colors.black,
+                          color: t.textPrimary,
                           fontWeight: FontWeight.w500,
                         ),
                         decoration: InputDecoration(
                           contentPadding: EdgeInsets.symmetric(horizontal: 20),
                           prefixIcon: Icon(
                             Icons.search,
-                            color: Colors.black,
+                            color: t.textPrimary,
                           ),
                           suffixIcon: IconButton(
                             icon: Icon(
                               Icons.clear,
-                              color: Colors.black,
+                              color: t.textPrimary,
                               size: 17,
                             ),
                             onPressed: () {
@@ -336,28 +341,30 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                           ),
                           hintText: 'Search',
                           hintStyle: TextStyle(
-                            color: Colors.black,
+                            color: t.textPrimary,
                             fontWeight: FontWeight.w500,
                           ),
                           filled: true,
-                          fillColor: Colors.white,
+                          fillColor: t.surfaceElevated,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide(color: t.border),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide(color: t.border),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(18),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(6),
+                            borderSide: BorderSide(color: t.accent, width: 1.5),
                           ),
                         ),
                         onChanged: (value) => searchQuery.value = value,
                       ),
                     )
-                  : SizedBox(
+                  : AppTooltip(
+                      message: 'Search assets by URL',
+                      child: SizedBox(
                       height: 32,
                       width: 32,
                       child: ElevatedButton(
@@ -367,9 +374,9 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                         },
                         style: ButtonStyle(
                           backgroundColor:
-                              WidgetStateProperty.all(Colors.white),
+                              WidgetStateProperty.all(t.surface),
                           foregroundColor:
-                              WidgetStateProperty.all(Colors.black),
+                              WidgetStateProperty.all(t.textPrimary),
                           padding: WidgetStateProperty.all(EdgeInsets.zero),
                           shape: WidgetStateProperty.all(
                             CircleBorder(),
@@ -377,7 +384,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                         ),
                         child: Icon(Icons.search, size: 20),
                       ),
-                    ),
+                    )),
               if (selectedMod.invalidUrls != null &&
                   selectedMod.invalidUrls!.isNotEmpty)
                 FilterChip(
@@ -401,8 +408,8 @@ class _SelectedModViewComponent extends HookConsumerWidget {
                   onSelected: (selected) {
                     selectedAssetTypeFilter.value = selected ? type : null;
                   },
-                  selectedColor: Colors.white,
-                  checkmarkColor: Colors.white,
+                  selectedColor: t.accent,
+                  checkmarkColor: t.surface,
                   visualDensity: VisualDensity.compact,
                   padding: EdgeInsets.symmetric(horizontal: 8, vertical: 7),
                   shape: RoundedRectangleBorder(
@@ -509,6 +516,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
     bool isFirstHeader,
   ) {
     final actionInProgress = ref.watch(actionInProgressProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     return Padding(
       padding: EdgeInsets.only(top: isFirstHeader ? 0.0 : 8.0),
@@ -517,7 +525,7 @@ class _SelectedModViewComponent extends HookConsumerWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: Colors.white,
+              color: t.textPrimary,
               width: 2.0,
             ),
           ),
@@ -555,8 +563,9 @@ class _AudioAssetsButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final ignoreAudioAssets = ref.watch(settingsProvider).ignoreAudioAssets;
     final actionInProgress = ref.watch(actionInProgressProvider);
+    final t = ref.watch(appThemeDataProvider);
 
-    return CustomTooltip(
+    return AppTooltip(
       message: switch (selectedMod.audioVisibility) {
         AudioAssetVisibility.useGlobalSetting =>
           'Using global setting (${ignoreAudioAssets ? "hidden" : "shown"})',
@@ -565,7 +574,7 @@ class _AudioAssetsButton extends ConsumerWidget {
       },
       child: MenuAnchor(
         style: MenuStyle(
-          backgroundColor: WidgetStateProperty.all(Colors.white),
+          backgroundColor: WidgetStateProperty.all(t.surface),
         ),
         builder: (context, controller, child) {
           final hasOverride = selectedMod.audioVisibility !=
@@ -589,10 +598,10 @@ class _AudioAssetsButton extends ConsumerWidget {
                   },
             style: ButtonStyle(
               backgroundColor: WidgetStateProperty.all(
-                hasOverride ? Colors.blue : Colors.white,
+                hasOverride ? t.accent : t.surfaceElevated,
               ),
               foregroundColor: WidgetStateProperty.all(
-                hasOverride ? Colors.white : Colors.black,
+                hasOverride ? t.surface : t.textPrimary,
               ),
             ),
             padding: EdgeInsets.zero, // removes default padding
@@ -609,8 +618,8 @@ class _AudioAssetsButton extends ConsumerWidget {
           MenuItemButton(
             closeOnActivate: true,
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
             ),
             child: Row(
               spacing: 8,
@@ -620,9 +629,9 @@ class _AudioAssetsButton extends ConsumerWidget {
                           AudioAssetVisibility.useGlobalSetting
                       ? Icons.check
                       : null,
-                  color: Colors.black,
+                  color: t.textPrimary,
                 ),
-                Icon(Icons.settings, color: Colors.black),
+                Icon(Icons.settings, color: t.textPrimary),
                 Text('Use global setting'),
               ],
             ),
@@ -662,8 +671,8 @@ class _AudioAssetsButton extends ConsumerWidget {
           MenuItemButton(
             closeOnActivate: true,
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
             ),
             child: Row(
               spacing: 8,
@@ -672,9 +681,9 @@ class _AudioAssetsButton extends ConsumerWidget {
                   selectedMod.audioVisibility == AudioAssetVisibility.alwaysShow
                       ? Icons.check
                       : null,
-                  color: Colors.black,
+                  color: t.textPrimary,
                 ),
-                Icon(Icons.volume_up, color: Colors.black),
+                Icon(Icons.volume_up, color: t.textPrimary),
                 Text('Show audio'),
               ],
             ),
@@ -713,8 +722,8 @@ class _AudioAssetsButton extends ConsumerWidget {
           MenuItemButton(
             closeOnActivate: true,
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
             ),
             child: Row(
               spacing: 8,
@@ -723,9 +732,9 @@ class _AudioAssetsButton extends ConsumerWidget {
                   selectedMod.audioVisibility == AudioAssetVisibility.alwaysHide
                       ? Icons.check
                       : null,
-                  color: Colors.black,
+                  color: t.textPrimary,
                 ),
-                Icon(Icons.volume_off, color: Colors.black),
+                Icon(Icons.volume_off, color: t.textPrimary),
                 Text('Hide audio'),
               ],
             ),
@@ -773,7 +782,7 @@ class _AudioAssetsButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomTooltip(
+    return AppTooltip(
       message: "View Images",
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
@@ -803,7 +812,7 @@ class _MissingFilesButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomTooltip(
+    return AppTooltip(
       message: "Download all missing ${assetType.label.toLowerCase()}",
       child: MouseRegion(
         cursor: SystemMouseCursors.click,

@@ -3,7 +3,8 @@ import 'package:flutter/services.dart' show Clipboard, ClipboardData;
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tts_mod_vault/src/models/log_entry.dart' show LogLevel;
-import 'package:tts_mod_vault/src/state/provider.dart' show logProvider, loggingProvider;
+import 'package:tts_mod_vault/src/state/provider.dart'
+    show logProvider, loggingProvider, logPanelHeightProvider, appThemeDataProvider;
 
 /// Panel shown at the bottom of the mods column.
 /// Visibility is toggled via [loggingProvider]; log data comes from [logProvider].
@@ -21,6 +22,8 @@ class LoggingConsole extends HookConsumerWidget {
     // Debug hidden by default — user can enable via the chip
     final visibleLevels = useState(
         LogLevel.values.where((l) => l != LogLevel.debug).toSet());
+    final logHeight = ref.watch(logPanelHeightProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     // Auto-scroll to bottom on new entries
     useEffect(() {
@@ -44,184 +47,232 @@ class LoggingConsole extends HookConsumerWidget {
       return e.message.toLowerCase().contains(filterText.value.toLowerCase());
     }).toList();
 
-    return Container(
-      height: 280,
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.9),
-        border: Border.all(color: Colors.grey.shade600),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-      ),
-      child: Column(
-        children: [
-          // Header
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade800,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
-            ),
-            child: Row(
-              children: [
-                const Icon(Icons.terminal, color: Colors.white, size: 16),
-                const SizedBox(width: 8),
-                const Text(
-                  'Activity Log',
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _LogDragHandle(currentHeight: logHeight),
+        Container(
+          height: logHeight,
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.9),
+            border: Border.all(color: Colors.grey.shade600),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+          ),
+          child: Column(
+            children: [
+              // Header
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade800,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(8)),
                 ),
-                const Spacer(),
-                // Severity filter chips
-                Wrap(
-                  spacing: 4,
-                  children: LogLevel.values.map((level) {
-                    final active = visibleLevels.value.contains(level);
-                    return GestureDetector(
-                      onTap: () {
-                        final next = Set<LogLevel>.from(visibleLevels.value);
-                        active ? next.remove(level) : next.add(level);
-                        visibleLevels.value = next;
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: active
-                              ? _levelColor(level)
-                              : Colors.transparent,
-                          border: Border.all(
-                              color: _levelColor(level), width: 1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          _levelText(level),
-                          style: TextStyle(
-                            color: active ? Colors.black : Colors.white,
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
+                child: Row(
+                  children: [
+                    const Icon(Icons.terminal, color: Colors.white, size: 16),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Activity Log',
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
+                    ),
+                    const Spacer(),
+                    // Severity filter chips
+                    Wrap(
+                      spacing: 4,
+                      children: LogLevel.values.map((level) {
+                        final active = visibleLevels.value.contains(level);
+                        return Tooltip(
+                          message: '${active ? "Hide" : "Show"} ${level.name} messages',
+                          waitDuration: const Duration(milliseconds: 300),
+                          child: GestureDetector(
+                          onTap: () {
+                            final next =
+                                Set<LogLevel>.from(visibleLevels.value);
+                            active ? next.remove(level) : next.add(level);
+                            visibleLevels.value = next;
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: active
+                                  ? _levelColor(level)
+                                  : Colors.transparent,
+                              border: Border.all(
+                                  color: _levelColor(level), width: 1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              _levelText(level),
+                              style: TextStyle(
+                                color: active ? Colors.black : Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ));
+                      }).toList(),
+                    ),
+                    const SizedBox(width: 8),
+                    ...[120.0, 280.0, 450.0].asMap().entries.map((entry) {
+                      final label = ['S', 'M', 'L'][entry.key];
+                      final preset = entry.value;
+                      final isActive = (logHeight - preset).abs() < 30;
+                      final heights = [120, 280, 450];
+                      return Tooltip(
+                        message: '${label == 'S' ? 'Small' : label == 'M' ? 'Medium' : 'Large'} (${heights[entry.key]}px)',
+                        waitDuration: const Duration(milliseconds: 300),
+                        child: GestureDetector(
+                        onTap: () =>
+                            ref.read(logPanelHeightProvider.notifier).set(preset),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          margin: const EdgeInsets.only(left: 3),
+                          decoration: BoxDecoration(
+                            color: isActive ? t.accent : t.surfaceElevated,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                          child: Text(
+                            label,
+                            style: TextStyle(
+                              color: isActive ? t.accentText : t.textSecondary,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
+                      ));
+                    }),
+                    IconButton(
+                      icon:
+                          const Icon(Icons.copy, color: Colors.white, size: 16),
+                      onPressed: () {
+                        final text =
+                            entries.map((e) => e.fullLogLine).join('\n');
+                        Clipboard.setData(ClipboardData(text: text));
+                      },
+                      tooltip: 'Copy to clipboard',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.delete_sweep,
+                          color: Colors.white, size: 16),
+                      onPressed: () => ref.read(logProvider.notifier).clear(),
+                      tooltip: 'Clear log',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.close,
+                          color: Colors.white, size: 16),
+                      onPressed: loggingNotifier.toggleVisibility,
+                      tooltip: 'Close',
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+              ),
+              // Filter
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                color: Colors.grey.shade900,
+                child: TextField(
+                  controller: filterController,
+                  style:
+                      const TextStyle(color: Colors.white, fontSize: 12),
+                  decoration: const InputDecoration(
+                    hintText: 'Filter logs…',
+                    hintStyle: TextStyle(color: Colors.grey),
+                    prefixIcon:
+                        Icon(Icons.search, color: Colors.grey, size: 16),
+                    border: InputBorder.none,
+                    contentPadding:
+                        EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  ),
+                  onChanged: (v) => filterText.value = v,
+                ),
+              ),
+              // Entries
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final entry = filtered[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            entry.formattedTimestamp,
+                            style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 10,
+                                fontFamily: 'monospace'),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: _levelColor(entry.level),
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                            child: Text(
+                              _levelText(entry.level),
+                              style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              entry.message,
+                              style: TextStyle(
+                                  color: entry.color,
+                                  fontSize: 11,
+                                  fontFamily: 'monospace'),
+                            ),
+                          ),
+                        ],
                       ),
                     );
-                  }).toList(),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.copy, color: Colors.white, size: 16),
-                  onPressed: () {
-                    final text = entries.map((e) => e.fullLogLine).join('\n');
-                    Clipboard.setData(ClipboardData(text: text));
                   },
-                  tooltip: 'Copy to clipboard',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
                 ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.delete_sweep, color: Colors.white, size: 16),
-                  onPressed: () => ref.read(logProvider.notifier).clear(),
-                  tooltip: 'Clear log',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-                const SizedBox(width: 8),
-                IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white, size: 16),
-                  onPressed: loggingNotifier.toggleVisibility,
-                  tooltip: 'Close',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-          ),
-          // Filter
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            color: Colors.grey.shade900,
-            child: TextField(
-              controller: filterController,
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-              decoration: const InputDecoration(
-                hintText: 'Filter logs…',
-                hintStyle: TextStyle(color: Colors.grey),
-                prefixIcon: Icon(Icons.search, color: Colors.grey, size: 16),
-                border: InputBorder.none,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               ),
-              onChanged: (v) => filterText.value = v,
-            ),
-          ),
-          // Entries
-          Expanded(
-            child: ListView.builder(
-              controller: scrollController,
-              itemCount: filtered.length,
-              itemBuilder: (context, index) {
-                final entry = filtered[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 2),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        entry.formattedTimestamp,
-                        style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 10,
-                            fontFamily: 'monospace'),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 4, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: _levelColor(entry.level),
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                        child: Text(
-                          _levelText(entry.level),
-                          style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          entry.message,
-                          style: TextStyle(
-                              color: entry.color,
-                              fontSize: 11,
-                              fontFamily: 'monospace'),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          // Status bar
-          Container(
-            padding: const EdgeInsets.all(4),
-            color: Colors.grey.shade800,
-            child: Row(
-              children: [
-                Text(
-                  '${filtered.length} / ${entries.length} entries',
-                  style:
-                      const TextStyle(color: Colors.grey, fontSize: 10),
+              // Status bar
+              Container(
+                padding: const EdgeInsets.all(4),
+                color: Colors.grey.shade800,
+                child: Row(
+                  children: [
+                    Text(
+                      '${filtered.length} / ${entries.length} entries',
+                      style: const TextStyle(
+                          color: Colors.grey, fontSize: 10),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -253,5 +304,47 @@ class LoggingConsole extends HookConsumerWidget {
       case LogLevel.debug:
         return 'DBG';
     }
+  }
+}
+
+class _LogDragHandle extends ConsumerStatefulWidget {
+  final double currentHeight;
+  const _LogDragHandle({required this.currentHeight});
+
+  @override
+  ConsumerState<_LogDragHandle> createState() => _LogDragHandleState();
+}
+
+class _LogDragHandleState extends ConsumerState<_LogDragHandle> {
+  static const _min = 80.0;
+  static const _max = 600.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final t = ref.watch(appThemeDataProvider);
+    return GestureDetector(
+      onVerticalDragUpdate: (d) {
+        // Free resize — no snapping during drag; S/M/L buttons handle presets
+        final newH = (widget.currentHeight - d.delta.dy).clamp(_min, _max);
+        ref.read(logPanelHeightProvider.notifier).set(newH);
+      },
+      onDoubleTap: () => ref.read(logPanelHeightProvider.notifier).set(280),
+      child: MouseRegion(
+        cursor: SystemMouseCursors.resizeRow,
+        child: Container(
+          height: 8,
+          color: Colors.transparent,
+          alignment: Alignment.center,
+          child: Container(
+            width: 40,
+            height: 3,
+            decoration: BoxDecoration(
+              color: t.accent.withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

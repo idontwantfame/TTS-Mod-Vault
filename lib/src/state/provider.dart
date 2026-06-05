@@ -34,6 +34,9 @@ import 'package:tts_mod_vault/src/state/sort_and_filter/sort_and_filter_state.da
 import 'package:tts_mod_vault/src/state/logging/logging.dart';
 import 'package:tts_mod_vault/src/state/logging/logging_state.dart' show LoggingState;
 import 'package:tts_mod_vault/src/state/storage/storage.dart';
+import 'package:tts_mod_vault/src/ui/theme/app_theme_id.dart';
+import 'package:tts_mod_vault/src/ui/theme/app_theme.dart';
+import 'package:tts_mod_vault/src/ui/theme/app_theme_provider.dart';
 
 enum AppPage { mods, backups }
 
@@ -197,7 +200,6 @@ final actionInProgressProvider = Provider<bool>((ref) {
       cleanUpStatus != CleanUpStatusEnum.idle ||
       backupStatus != BackupStatusEnum.idle ||
       bulkActionStatus != BulkActionsStatusEnum.idle ||
-      isDownloading ||
       modsAsyncValue is AsyncLoading ||
       deletingBackup ||
       refreshingSharedAssets;
@@ -360,4 +362,90 @@ final filteredModsProvider = Provider<List<Mod>>((ref) {
   }
 
   return filteredMods;
+});
+
+final appThemeProvider =
+    StateNotifierProvider<AppThemeNotifier, AppThemeId>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.appThemeIdKey);
+  final initial = saved != null
+      ? AppThemeId.values.firstWhere((e) => e.name == saved,
+          orElse: () => AppThemeId.purpleDark)
+      : AppThemeId.purpleDark;
+  return AppThemeNotifier(initial);
+});
+
+final appThemeDataProvider = Provider<AppThemeData>((ref) {
+  final id = ref.watch(appThemeProvider);
+  return AppThemeData.forId(id);
+});
+
+final appThemePersistProvider = Provider<void>((ref) {
+  ref.keepAlive();
+  ref.listen<AppThemeId>(appThemeProvider, (_, next) {
+    ref.read(storageProvider).saveUiPref(Storage.appThemeIdKey, next.name);
+  });
+});
+
+// --- Mod list display preferences ---
+
+enum ModListStyle { richRows, gridCards, compact }
+
+enum ModListDensity { compact, defaultDensity, comfortable }
+
+class _DoubleNotifier extends StateNotifier<double> {
+  _DoubleNotifier(super.state);
+  // ignore: use_setters_to_change_properties
+  void set(double v) => state = v;
+}
+
+class ModListStyleNotifier extends StateNotifier<ModListStyle> {
+  ModListStyleNotifier(super.state);
+  // ignore: use_setters_to_change_properties
+  void set(ModListStyle s) => state = s;
+}
+
+class ModListDensityNotifier extends StateNotifier<ModListDensity> {
+  ModListDensityNotifier(super.state);
+  // ignore: use_setters_to_change_properties
+  void set(ModListDensity d) => state = d;
+}
+
+final detailPanelExpandedProvider = StateProvider<bool>((ref) => false);
+
+final logPanelHeightProvider =
+    StateNotifierProvider<_DoubleNotifier, double>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.logPanelHeightKey);
+  return _DoubleNotifier(
+      saved != null ? (double.tryParse(saved) ?? 280.0) : 280.0);
+});
+
+final modListStyleProvider =
+    StateNotifierProvider<ModListStyleNotifier, ModListStyle>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.modListStyleKey);
+  final initial = saved != null
+      ? ModListStyle.values.firstWhere((e) => e.name == saved,
+          orElse: () => ModListStyle.richRows)
+      : ModListStyle.richRows;
+  return ModListStyleNotifier(initial);
+});
+
+final modListDensityProvider =
+    StateNotifierProvider<ModListDensityNotifier, ModListDensity>((ref) {
+  final saved = ref.read(storageProvider).getUiPref(Storage.modListDensityKey);
+  final initial = saved != null
+      ? ModListDensity.values.firstWhere((e) => e.name == saved,
+          orElse: () => ModListDensity.defaultDensity)
+      : ModListDensity.defaultDensity;
+  return ModListDensityNotifier(initial);
+});
+
+final uiPrefPersistProvider = Provider<void>((ref) {
+  ref.keepAlive();
+  final storage = ref.read(storageProvider);
+  ref.listen<double>(logPanelHeightProvider,
+      (_, v) => storage.saveUiPref(Storage.logPanelHeightKey, '$v'));
+  ref.listen<ModListStyle>(modListStyleProvider,
+      (_, v) => storage.saveUiPref(Storage.modListStyleKey, v.name));
+  ref.listen<ModListDensity>(modListDensityProvider,
+      (_, v) => storage.saveUiPref(Storage.modListDensityKey, v.name));
 });

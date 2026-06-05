@@ -5,11 +5,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
 import 'dart:ui' show ImageFilter;
 import 'package:tts_mod_vault/src/mods/components/components.dart'
     show showUpdateUrlsDialog;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppThemeData, AppTooltip, AppTooltipTier, TooltipStrings;
 import 'package:tts_mod_vault/src/mods/components/url_check_results_dialog.dart'
     show UrlCheckResultsDialog;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show Mod;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show actionInProgressProvider, deleteAssetsProvider, downloadProvider, modsProvider;
+    show actionInProgressProvider, appThemeDataProvider, deleteAssetsProvider, downloadProvider, modsProvider;
 import 'package:tts_mod_vault/src/utils.dart'
     show showSnackBar, copyToClipboard;
 import 'package:tts_mod_vault/src/state/delete_assets/delete_assets_state.dart'
@@ -26,19 +28,20 @@ class SelectedModActionsMenu extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final actionInProgress = ref.watch(actionInProgressProvider);
     final modsNotifier = ref.watch(modsProvider.notifier);
+    final t = ref.watch(appThemeDataProvider);
 
     return MenuAnchor(
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.white),
+        backgroundColor: WidgetStateProperty.all(t.surface),
       ),
       menuChildren: <Widget>[
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.image, color: Colors.black),
-          child: Text('View Images', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.image, color: t.textSecondary),
+          child: AppTooltip(message: 'Open the image viewer for this mod', child: Text('View Images', style: TextStyle(color: t.textPrimary))),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -49,12 +52,11 @@ class SelectedModActionsMenu extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.link, color: Colors.black),
-          child: Text('Check for invalid URLs',
-              style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.link, color: t.textSecondary),
+          child: AppTooltip(message: 'Test every asset URL and list ones that fail to load', child: Text('Check for invalid URLs', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
             showDialog(
@@ -65,12 +67,11 @@ class SelectedModActionsMenu extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.copy, color: Colors.black),
-          child:
-              Text('Copy missing URLs', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.copy, color: t.textSecondary),
+          child: AppTooltip(message: 'Copy all missing asset URLs to clipboard', child: Text('Copy missing URLs', style: TextStyle(color: t.textPrimary))),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -94,65 +95,68 @@ class SelectedModActionsMenu extends HookConsumerWidget {
             }
           },
         ),
-        MenuItemButton(
-          style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
-          ),
-          leadingIcon: Icon(Icons.refresh, color: Colors.black),
-          child: Text('Re-download all assets',
-              style: TextStyle(color: Colors.black)),
-          onPressed: () async {
-            if (actionInProgress) return;
+        AppTooltip(
+          message: TooltipStrings.redownloadAll,
+          tier: AppTooltipTier.complex,
+          child: MenuItemButton(
+            style: MenuItemButton.styleFrom(
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
+            ),
+            leadingIcon: Icon(Icons.refresh, color: t.textSecondary),
+            child: Text('Re-download all assets',
+                style: TextStyle(color: t.textPrimary)),
+            onPressed: () async {
+              if (actionInProgress) return;
 
-            final hasAssets = selectedMod.getAllAssets().isNotEmpty;
-            if (!hasAssets) return;
+              final hasAssets = selectedMod.getAllAssets().isNotEmpty;
+              if (!hasAssets) return;
 
-            final confirmed = await showDialog<bool>(
-              context: context,
-              builder: (ctx) => BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                child: AlertDialog(
-                  title: const Text('Re-download all assets?'),
-                  content: Text(
-                    'This will re-download all ${selectedMod.assetCount} assets for "${selectedMod.saveName}", overwriting existing files.\n\nContinue?',
+              final confirmed = await showDialog<bool>(
+                context: context,
+                builder: (ctx) => BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                  child: AlertDialog(
+                    title: const Text('Re-download all assets?'),
+                    content: Text(
+                      'This will re-download all ${selectedMod.assetCount} assets for "${selectedMod.saveName}", overwriting existing files.\n\nContinue?',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(false),
+                        child: const Text('Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(ctx).pop(true),
+                        child: const Text('Re-download'),
+                      ),
+                    ],
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(ctx).pop(false),
-                      child: const Text('Cancel'),
-                    ),
-                    ElevatedButton(
-                      onPressed: () => Navigator.of(ctx).pop(true),
-                      child: const Text('Re-download'),
-                    ),
-                  ],
                 ),
-              ),
-            );
+              );
 
-            if (confirmed != true) return;
-            if (!context.mounted) return;
+              if (confirmed != true) return;
+              if (!context.mounted) return;
 
-            final modsNotifier = ref.read(modsProvider.notifier);
-            final downloaded = await ref
-                .read(downloadProvider.notifier)
-                .redownloadAllFiles(selectedMod);
-            await modsNotifier.updateSelectedMod(selectedMod);
-            if (downloaded.isNotEmpty) {
-              await modsNotifier.refreshModsWithSharedAssets(downloaded,
-                  excludeJsonFileName: selectedMod.jsonFileName);
-            }
-          },
+              final modsNotifier = ref.read(modsProvider.notifier);
+              final downloaded = await ref
+                  .read(downloadProvider.notifier)
+                  .redownloadAllFiles(selectedMod);
+              await modsNotifier.updateSelectedMod(selectedMod);
+              if (downloaded.isNotEmpty) {
+                await modsNotifier.refreshModsWithSharedAssets(downloaded,
+                    excludeJsonFileName: selectedMod.jsonFileName);
+              }
+            },
+          ),
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.delete_sweep, color: Colors.black),
-          child:
-              Text('Delete asset files', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.delete_sweep, color: t.textSecondary),
+          child: AppTooltip(message: 'Delete downloaded asset files for this mod (JSON file is kept)', child: Text('Delete asset files', style: TextStyle(color: t.textPrimary))),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -205,6 +209,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
                     deleteAssetsNotifier,
                     modsNotifier,
                     selectedMod,
+                    t,
                     ref,
                   );
                 }
@@ -230,11 +235,11 @@ class SelectedModActionsMenu extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.edit, color: Colors.black),
-          child: Text('Update URLs', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.edit, color: t.textSecondary),
+          child: AppTooltip(message: 'Find and replace a URL prefix in this mod\'s asset links', child: Text('Update URLs', style: TextStyle(color: t.textPrimary))),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -260,8 +265,8 @@ class SelectedModActionsMenu extends HookConsumerWidget {
       ) {
         return IconButton(
           style: IconButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surfaceElevated,
+            foregroundColor: t.textSecondary,
             minimumSize: Size(32, 32),
             maximumSize: Size(32, 32),
           ),
@@ -274,6 +279,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
               controller.open();
             }
           },
+          tooltip: 'More actions',
           icon: Icon(Icons.more_vert, size: 16),
         );
       },
@@ -290,6 +296,7 @@ void _showDeleteConfirmDialog(
   DeleteAssetsNotifier deleteAssetsNotifier,
   modsNotifier,
   Mod selectedMod,
+  AppThemeData t,
   WidgetRef ref,
 ) async {
   bool includeShared = false;
@@ -329,8 +336,8 @@ void _showDeleteConfirmDialog(
                     if (hasSharedAssets) ...[
                       CheckboxListTile(
                         value: includeShared,
-                        checkColor: Colors.black,
-                        activeColor: Colors.white,
+                        checkColor: t.surface,
+                        activeColor: t.accent,
                         visualDensity: VisualDensity.compact,
                         onChanged: (value) {
                           setState(() {
@@ -434,6 +441,7 @@ void _showDeleteConfirmDialog(
             deleteAssetsNotifier,
             modsNotifier,
             selectedMod,
+            t,
             ref,
           );
         }

@@ -8,8 +8,7 @@ import 'package:flutter/services.dart' show HardwareKeyboard;
 import 'package:flutter_hooks/flutter_hooks.dart' show useMemoized, useState;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/backup/backup_status_enum.dart'
     show ExistingBackupStatusEnum;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart'
@@ -17,6 +16,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart'
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        detailPanelExpandedProvider,
         modsProvider,
         multiModsProvider,
         settingsProvider;
@@ -99,8 +99,13 @@ class ModsGridCard extends HookConsumerWidget {
 
               ref.read(multiModsProvider.notifier).state = newSelected;
             } else {
-              // Normal left-click: Single selection
+              // Normal left-click: toggle panel if this mod is already selected
+              final alreadySelected = ref.read(multiModsProvider).length == 1 &&
+                  ref.read(multiModsProvider).contains(mod.jsonFilePath);
+              final panelOpen = ref.read(detailPanelExpandedProvider);
               ref.read(modsProvider.notifier).setSelectedMod(mod);
+              ref.read(detailPanelExpandedProvider.notifier).state =
+                  !(alreadySelected && panelOpen);
             }
           }
         },
@@ -184,8 +189,7 @@ class ModsGridCard extends HookConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           spacing: 4,
                           children: [
-                            CustomTooltip(
-                              waitDuration: Duration(milliseconds: 300),
+                            AppTooltip(
                               message: filesMessage,
                               child: Text(
                                 "${mod.existingAssetCount}/${mod.assetCount}",
@@ -200,8 +204,7 @@ class ModsGridCard extends HookConsumerWidget {
                             ),
                             if (mod.audioVisibility !=
                                 AudioAssetVisibility.useGlobalSetting)
-                              CustomTooltip(
-                                waitDuration: Duration(milliseconds: 300),
+                              AppTooltip(
                                 message: mod.audioVisibility ==
                                         AudioAssetVisibility.alwaysShow
                                     ? 'Override: Show audio assets'
@@ -216,8 +219,7 @@ class ModsGridCard extends HookConsumerWidget {
                                 ),
                               ),
                             if (mod.backup != null && showBackupState)
-                              CustomTooltip(
-                                waitDuration: Duration(milliseconds: 300),
+                              AppTooltip(
                                 message:
                                     'Update: ${formatTimestamp(mod.dateTimeStamp) ?? 'N/A'}\n'
                                     'Backup: ${formatTimestamp(mod.backup!.lastModifiedTimestamp.toString())}'

@@ -5,12 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'
     show FilteringTextInputFormatter, LengthLimitingTextInputFormatter;
 import 'package:flutter_hooks/flutter_hooks.dart'
-    show HookWidget, useFocusNode, useState, useTextEditingController;
+    show useFocusNode, useState, useTextEditingController;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
-    show HookConsumerWidget, WidgetRef;
+    show ConsumerWidget, HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as path;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
 import 'package:tts_mod_vault/src/settings/editable_list.dart'
     show EditableStringList;
 import 'package:tts_mod_vault/src/state/directories/directories.dart'
@@ -18,12 +16,20 @@ import 'package:tts_mod_vault/src/state/directories/directories.dart'
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
+        appThemeDataProvider,
+        appThemeProvider,
         directoriesProvider,
         downloadProvider,
+        modListDensityProvider,
+        modListStyleProvider,
+        ModListDensity,
+        ModListStyle,
         modsProvider,
         multiModsProvider,
         selectedModTypeProvider,
         settingsProvider;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppThemeData, AppThemeId, AppTooltip, AppTooltipTier, TooltipStrings;
 import 'package:tts_mod_vault/src/models/url_replacement_preset.dart'
     show UrlReplacementPreset;
 import 'package:tts_mod_vault/src/state/settings/settings_state.dart'
@@ -85,7 +91,6 @@ class SettingsDialog extends HookConsumerWidget {
     final selectedSection = useState<SettingsSection>(SettingsSection.features);
 
     // UI
-    final useModsListViewBox = useState(settings.useModsListView);
     final useBackupsListViewBox = useState(settings.useBackupsListView);
     final showTitleOnCardsBox = useState(settings.showTitleOnCards);
     final defaultSortOption = useState(settings.defaultSortOption);
@@ -130,7 +135,6 @@ class SettingsDialog extends HookConsumerWidget {
       concurrentDownloads = concurrentDownloads.clamp(1, 99);
 
       final newState = SettingsState(
-        useModsListView: useModsListViewBox.value,
         useBackupsListView: useBackupsListViewBox.value,
         showTitleOnCards: showTitleOnCardsBox.value,
         checkForUpdatesOnStart: checkForUpdatesOnStartBox.value,
@@ -239,7 +243,6 @@ class SettingsDialog extends HookConsumerWidget {
 
                                 case SettingsSection.interface:
                                   return SettingsInterfaceColumn(
-                                    useModsListViewBox: useModsListViewBox,
                                     useBackupsListViewBox:
                                         useBackupsListViewBox,
                                     showTitleOnCardsBox: showTitleOnCardsBox,
@@ -357,7 +360,7 @@ class SectionHeader extends StatelessWidget {
   }
 }
 
-class SettingsFoldersColumn extends StatelessWidget {
+class SettingsFoldersColumn extends ConsumerWidget {
   const SettingsFoldersColumn({
     super.key,
     required this.modsDir,
@@ -376,7 +379,8 @@ class SettingsFoldersColumn extends StatelessWidget {
   final ValueNotifier<bool> allowCustomSavesFolder;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,7 +389,7 @@ class SettingsFoldersColumn extends StatelessWidget {
             spacing: 4,
             children: [
               SectionHeader(title: "Mods Folder"),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     'All subfolders of the chosen folder are included\nData will be refreshed if saving changes to a folder',
                 child: Icon(Icons.info_outline),
@@ -399,13 +403,13 @@ class SettingsFoldersColumn extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white),
+                    border: Border.all(color: t.border),
                     borderRadius: BorderRadius.circular(4),
-                    color: Colors.white,
+                    color: t.surfaceElevated,
                   ),
                   child: SelectableText(
                     modsDir.value,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(color: t.textPrimary),
                   ),
                 ),
               ),
@@ -447,7 +451,7 @@ class SettingsFoldersColumn extends StatelessWidget {
             spacing: 4,
             children: [
               SectionHeader(title: "Saves Folder"),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     'All subfolders of the chosen folder are included\nData will be refreshed if saving changes to a folder',
                 child: Icon(Icons.info_outline),
@@ -461,13 +465,13 @@ class SettingsFoldersColumn extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white),
+                    border: Border.all(color: t.border),
                     borderRadius: BorderRadius.circular(4),
-                    color: Colors.white,
+                    color: t.surfaceElevated,
                   ),
                   child: SelectableText(
                     savesDir.value,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(color: t.textPrimary),
                   ),
                 ),
               ),
@@ -511,7 +515,7 @@ class SettingsFoldersColumn extends StatelessWidget {
               spacing: 4,
               children: [
                 const Text('Allow custom Saves folder path'),
-                CustomTooltip(
+                AppTooltip(
                   message:
                       'When enabled, the Saves folder is not required to be named "Saves"',
                   child: Icon(Icons.info_outline),
@@ -519,8 +523,8 @@ class SettingsFoldersColumn extends StatelessWidget {
               ],
             ),
             value: allowCustomSavesFolder.value,
-            checkColor: Colors.black,
-            activeColor: Colors.white,
+            checkColor: t.surface,
+            activeColor: t.accent,
             contentPadding: EdgeInsets.zero,
             onChanged: (value) {
               allowCustomSavesFolder.value =
@@ -532,7 +536,7 @@ class SettingsFoldersColumn extends StatelessWidget {
             spacing: 4,
             children: [
               SectionHeader(title: "Backups Folder"),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     'Backup Folder is required for Backup State feature to work after a restart or data refresh\nData will be refreshed if saving changes to a folder',
                 child: Icon(Icons.info_outline),
@@ -546,13 +550,13 @@ class SettingsFoldersColumn extends StatelessWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.white),
+                    border: Border.all(color: t.border),
                     borderRadius: BorderRadius.circular(4),
-                    color: Colors.white,
+                    color: t.surfaceElevated,
                   ),
                   child: SelectableText(
                     backupsDir.value,
-                    style: const TextStyle(color: Colors.black),
+                    style: TextStyle(color: t.textPrimary),
                   ),
                 ),
               ),
@@ -601,7 +605,7 @@ class SettingsFoldersColumn extends StatelessWidget {
   }
 }
 
-class SettingsFeaturesColumn extends StatelessWidget {
+class SettingsFeaturesColumn extends ConsumerWidget {
   const SettingsFeaturesColumn({
     super.key,
     required this.checkForUpdatesOnStartBox,
@@ -618,15 +622,16 @@ class SettingsFeaturesColumn extends StatelessWidget {
   final ValueNotifier<bool> ignoreAudioAssets;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CheckboxListTile(
           title: const Text('Check for updates on start'),
           value: checkForUpdatesOnStartBox.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             checkForUpdatesOnStartBox.value =
@@ -638,7 +643,7 @@ class SettingsFeaturesColumn extends StatelessWidget {
             spacing: 4,
             children: [
               const Text('Show Saved Objects'),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     "Show Saved Objects next to Mods and Saves, manual refresh of data is needed after enabling if TTS Mod Vault was opened while this setting was disabled",
                 child: Icon(Icons.info_outline),
@@ -646,8 +651,8 @@ class SettingsFeaturesColumn extends StatelessWidget {
             ],
           ),
           value: showSavedObjects.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             showSavedObjects.value = value ?? showSavedObjects.value;
@@ -661,7 +666,7 @@ class SettingsFeaturesColumn extends StatelessWidget {
                 'Force JSON name in Backup filename',
                 overflow: TextOverflow.ellipsis,
               ),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     """By default, the JSON filename is included in the Mod backup filename only if the JSON filename is a number.
 This setting has no effect on backups of Saves and Saved Objects because they already always include the JSON filename.
@@ -681,8 +686,8 @@ the JSON filename (ExampleGame.ttsmod).""",
             ],
           ),
           value: forceBackupJsonFilename.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             forceBackupJsonFilename.value =
@@ -694,7 +699,7 @@ the JSON filename (ExampleGame.ttsmod).""",
             spacing: 4,
             children: [
               const Text('Show Backup State'),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     "Backups Folder is required to show Backup State after a restart or data refresh",
                 child: Icon(Icons.info_outline),
@@ -702,8 +707,8 @@ the JSON filename (ExampleGame.ttsmod).""",
             ],
           ),
           value: showBackupState.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             showBackupState.value = value ?? showBackupState.value;
@@ -714,7 +719,7 @@ the JSON filename (ExampleGame.ttsmod).""",
             spacing: 4,
             children: [
               const Text('Exclude audio assets'),
-              CustomTooltip(
+              AppTooltip(
                 message:
                     "When enabled, audio assets will not be available for download and backup unless modified on per-mod basis\nData will be refreshed after changing this setting",
                 child: Icon(Icons.info_outline),
@@ -722,8 +727,8 @@ the JSON filename (ExampleGame.ttsmod).""",
             ],
           ),
           value: ignoreAudioAssets.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             ignoreAudioAssets.value = value ?? ignoreAudioAssets.value;
@@ -831,10 +836,9 @@ class SettingsUpdateUrlsPresetsColumn extends StatelessWidget {
   }
 }
 
-class SettingsInterfaceColumn extends StatelessWidget {
+class SettingsInterfaceColumn extends ConsumerWidget {
   const SettingsInterfaceColumn({
     super.key,
-    required this.useModsListViewBox,
     required this.useBackupsListViewBox,
     required this.showTitleOnCardsBox,
     required this.defaultSortOption,
@@ -844,7 +848,6 @@ class SettingsInterfaceColumn extends StatelessWidget {
     required this.assetUrlFontSizeFocusNode,
   });
 
-  final ValueNotifier<bool> useModsListViewBox;
   final ValueNotifier<bool> useBackupsListViewBox;
   final ValueNotifier<bool> showTitleOnCardsBox;
   final ValueNotifier<SortOptionEnum> defaultSortOption;
@@ -854,25 +857,58 @@ class SettingsInterfaceColumn extends StatelessWidget {
   final FocusNode assetUrlFontSizeFocusNode;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CheckboxListTile(
-          title: const Text('Display mods as a list instead of grid'),
-          value: useModsListViewBox.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
-          contentPadding: EdgeInsets.all(0),
-          onChanged: (value) {
-            useModsListViewBox.value = value ?? useModsListViewBox.value;
-          },
+        // Theme selector
+        Row(
+          children: [
+            const Expanded(child: Text('Theme', style: TextStyle(fontSize: 16))),
+            _ThemeSelector(),
+          ],
         ),
+        const SizedBox(height: 16),
+        // Mod list style
+        Row(
+          children: [
+            const Expanded(child: Text('Mod list style', style: TextStyle(fontSize: 16))),
+            _SegmentedPicker<ModListStyle>(
+              values: ModListStyle.values,
+              current: ref.watch(modListStyleProvider),
+              label: (v) => switch (v) {
+                ModListStyle.richRows => 'Rich',
+                ModListStyle.gridCards => 'Grid',
+                ModListStyle.compact => 'Compact',
+              },
+              onSelect: (v) => ref.read(modListStyleProvider.notifier).set(v),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        // List density
+        Row(
+          children: [
+            const Expanded(child: Text('List density', style: TextStyle(fontSize: 16))),
+            _SegmentedPicker<ModListDensity>(
+              values: ModListDensity.values,
+              current: ref.watch(modListDensityProvider),
+              label: (v) => switch (v) {
+                ModListDensity.compact => 'Compact',
+                ModListDensity.defaultDensity => 'Default',
+                ModListDensity.comfortable => 'Comfortable',
+              },
+              onSelect: (v) => ref.read(modListDensityProvider.notifier).set(v),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         CheckboxListTile(
           title: const Text('Display backups as a list instead of grid'),
           value: useBackupsListViewBox.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             useBackupsListViewBox.value = value ?? useBackupsListViewBox.value;
@@ -881,8 +917,8 @@ class SettingsInterfaceColumn extends StatelessWidget {
         CheckboxListTile(
           title: const Text('Display mod names on grid cards'),
           value: showTitleOnCardsBox.value,
-          checkColor: Colors.black,
-          activeColor: Colors.white,
+          checkColor: t.surface,
+          activeColor: t.accent,
           contentPadding: EdgeInsets.all(0),
           onChanged: (value) {
             showTitleOnCardsBox.value = value ?? showTitleOnCardsBox.value;
@@ -898,37 +934,28 @@ class SettingsInterfaceColumn extends StatelessWidget {
             ),
             DropdownButton<SortOptionEnum>(
               value: defaultSortOption.value,
-              dropdownColor: Colors.white,
-              style: TextStyle(color: Colors.white),
-              underline: Container(
-                height: 2,
-                color: Colors.white,
-              ),
+              dropdownColor: t.surface,
+              style: TextStyle(color: t.textPrimary),
+              underline: Container(height: 2, color: t.border),
               focusColor: Colors.transparent,
               selectedItemBuilder: (BuildContext context) {
                 return SortOptionEnum.values.map<Widget>((item) {
                   return Container(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      item.label,
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: Text(item.label,
+                        style: TextStyle(color: t.textPrimary)),
                   );
                 }).toList();
               },
               items: SortOptionEnum.values.map((sortOption) {
                 return DropdownMenuItem<SortOptionEnum>(
                   value: sortOption,
-                  child: Text(
-                    sortOption.label,
-                    style: TextStyle(color: Colors.black),
-                  ),
+                  child: Text(sortOption.label,
+                      style: TextStyle(color: t.textPrimary)),
                 );
               }).toList(),
               onChanged: (SortOptionEnum? newValue) {
-                if (newValue != null) {
-                  defaultSortOption.value = newValue;
-                }
+                if (newValue != null) defaultSortOption.value = newValue;
               },
             ),
           ],
@@ -943,37 +970,28 @@ class SettingsInterfaceColumn extends StatelessWidget {
             ),
             DropdownButton<BackupSortOptionEnum>(
               value: defaultBackupSortOption.value,
-              dropdownColor: Colors.white,
-              style: TextStyle(color: Colors.white),
-              underline: Container(
-                height: 2,
-                color: Colors.white,
-              ),
+              dropdownColor: t.surface,
+              style: TextStyle(color: t.textPrimary),
+              underline: Container(height: 2, color: t.border),
               focusColor: Colors.transparent,
               selectedItemBuilder: (BuildContext context) {
                 return BackupSortOptionEnum.values.map<Widget>((item) {
                   return Container(
                     alignment: Alignment.centerLeft,
-                    child: Text(
-                      item.label,
-                      style: TextStyle(color: Colors.white),
-                    ),
+                    child: Text(item.label,
+                        style: TextStyle(color: t.textPrimary)),
                   );
                 }).toList();
               },
               items: BackupSortOptionEnum.values.map((sortOption) {
                 return DropdownMenuItem<BackupSortOptionEnum>(
                   value: sortOption,
-                  child: Text(
-                    sortOption.label,
-                    style: TextStyle(color: Colors.black),
-                  ),
+                  child: Text(sortOption.label,
+                      style: TextStyle(color: t.textPrimary)),
                 );
               }).toList(),
               onChanged: (BackupSortOptionEnum? newValue) {
-                if (newValue != null) {
-                  defaultBackupSortOption.value = newValue;
-                }
+                if (newValue != null) defaultBackupSortOption.value = newValue;
               },
             ),
           ],
@@ -981,13 +999,9 @@ class SettingsInterfaceColumn extends StatelessWidget {
         Row(
           spacing: 4,
           children: [
-            Text(
-              'Asset URL font size',
-              style: TextStyle(fontSize: 16),
-            ),
-            CustomTooltip(
-              message:
-                  "Range: 1-99 (up to 1 decimal place)\nDefault value: 12.0",
+            Text('Asset URL font size', style: TextStyle(fontSize: 16)),
+            AppTooltip(
+              message: "Range: 1-99 (up to 1 decimal place)\nDefault value: 12.0",
               child: Icon(Icons.info_outline),
             ),
             Spacer(),
@@ -996,17 +1010,25 @@ class SettingsInterfaceColumn extends StatelessWidget {
               child: TextField(
                 textAlign: TextAlign.center,
                 controller: assetUrlFontSizeController,
-                cursorColor: Colors.black,
+                cursorColor: t.accent,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
                 inputFormatters: [
                   FilteringTextInputFormatter.allow(RegExp(r'^\d{0,2}\.?\d?$')),
                 ],
-                style:
-                    TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                style: TextStyle(color: t.textPrimary, fontWeight: FontWeight.bold),
                 decoration: InputDecoration(
-                  fillColor: Colors.white,
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: t.surfaceElevated,
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide(color: t.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: t.border),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: t.accent, width: 1.5),
+                  ),
                 ),
                 focusNode: assetUrlFontSizeFocusNode,
                 onChanged: (value) {
@@ -1048,6 +1070,7 @@ class SettingsNetworkColumn extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final proxyTestResult = useState<String?>(null);
     final proxyTesting = useState(false);
+    final t = ref.watch(appThemeDataProvider);
 
     return SingleChildScrollView(
       child: Column(
@@ -1063,7 +1086,7 @@ class SettingsNetworkColumn extends HookConsumerWidget {
                       'Number of concurrent downloads',
                       style: TextStyle(fontSize: 16),
                     ),
-                    CustomTooltip(
+                    AppTooltip(
                       message:
                           "Lower the value if you experience working URLs failing to download when downloading from multiple URLs at once\nDefault value: 5",
                       child: Icon(Icons.info_outline),
@@ -1076,17 +1099,19 @@ class SettingsNetworkColumn extends HookConsumerWidget {
                 child: TextField(
                   textAlign: TextAlign.center,
                   controller: textFieldController,
-                  cursorColor: Colors.black,
+                  cursorColor: t.accent,
                   keyboardType: TextInputType.number,
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly,
                     LengthLimitingTextInputFormatter(2),
                   ],
-                  style: TextStyle(
-                      color: Colors.black, fontWeight: FontWeight.bold),
+                  style: TextStyle(color: t.textPrimary, fontWeight: FontWeight.bold),
                   decoration: InputDecoration(
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(),
+                    filled: true,
+                    fillColor: t.surfaceElevated,
+                    border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
                   ),
                   focusNode: textFieldFocusNode,
                   onChanged: (value) {
@@ -1126,9 +1151,9 @@ class SettingsNetworkColumn extends HookConsumerWidget {
                       'Proxy URL (optional)',
                       style: TextStyle(fontSize: 16),
                     ),
-                    CustomTooltip(
-                      message:
-                          'Enter a proxy URL to route network requests through a proxy server\nFormat: http://proxy.example.com:8080 or socks5://proxy.example.com:1080',
+                    AppTooltip(
+                      message: TooltipStrings.proxyUrl,
+                      tier: AppTooltipTier.complex,
                       child: Icon(Icons.info_outline),
                     ),
                   ],
@@ -1139,14 +1164,16 @@ class SettingsNetworkColumn extends HookConsumerWidget {
           SizedBox(height: 8),
           TextField(
             controller: proxyTextFieldController,
-            cursorColor: Colors.black,
-            style: TextStyle(color: Colors.black),
+            cursorColor: t.accent,
+            style: TextStyle(color: t.textPrimary),
             decoration: InputDecoration(
-              fillColor: Colors.white,
               filled: true,
-              border: OutlineInputBorder(),
+              fillColor: t.surfaceElevated,
+              border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+              enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+              focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
               hintText: 'http://proxy.example.com:8080',
-              hintStyle: TextStyle(color: Colors.grey),
+              hintStyle: TextStyle(color: t.textMuted),
             ),
             focusNode: proxyTextFieldFocusNode,
             onChanged: (value) {
@@ -1199,13 +1226,99 @@ class SettingsNetworkColumn extends HookConsumerWidget {
   }
 }
 
-class _PresetEditorDialog extends HookWidget {
+class _ThemeSelector extends ConsumerWidget {
+  const _ThemeSelector();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
+    final current = ref.watch(appThemeProvider);
+
+    return Row(
+      spacing: 10,
+      children: AppThemeId.values.map((id) {
+        final themeData = AppThemeData.forId(id);
+        final isSelected = id == current;
+        return AppTooltip(
+          message: id.label,
+          child: GestureDetector(
+            onTap: () => ref.read(appThemeProvider.notifier).setTheme(id),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 150),
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: themeData.accent,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected ? t.textPrimary : Colors.transparent,
+                  width: 2.5,
+                ),
+                boxShadow: isSelected
+                    ? [BoxShadow(
+                        color: themeData.accent.withValues(alpha: 0.5),
+                        blurRadius: 6)]
+                    : null,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _SegmentedPicker<T> extends ConsumerWidget {
+  final List<T> values;
+  final T current;
+  final String Function(T) label;
+  final void Function(T) onSelect;
+
+  const _SegmentedPicker({
+    required this.values,
+    required this.current,
+    required this.label,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
+    return Row(
+      children: values.map((v) {
+        final active = v == current;
+        return GestureDetector(
+          onTap: () => onSelect(v),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: active ? t.accent : t.surfaceElevated,
+              border: Border.all(color: active ? t.accent : t.border),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Text(
+              label(v),
+              style: TextStyle(
+                color: active ? t.accentText : t.textSecondary,
+                fontSize: 11,
+                fontWeight: active ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _PresetEditorDialog extends HookConsumerWidget {
   final UrlReplacementPreset? preset;
 
   const _PresetEditorDialog({this.preset});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     final labelController = useTextEditingController(text: preset?.label ?? '');
     final oldUrlController =
         useTextEditingController(text: preset?.oldUrl ?? '');
@@ -1228,12 +1341,14 @@ class _PresetEditorDialog extends HookWidget {
             TextField(
               controller: labelController,
               autofocus: true,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-              decoration: const InputDecoration(
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              style: TextStyle(fontSize: 14, color: t.textPrimary),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: t.surfaceElevated,
+                border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               ),
             ),
             const SizedBox(height: 12),
@@ -1244,12 +1359,14 @@ class _PresetEditorDialog extends HookWidget {
             const SizedBox(height: 4),
             TextField(
               controller: oldUrlController,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-              decoration: const InputDecoration(
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              style: TextStyle(fontSize: 14, color: t.textPrimary),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: t.surfaceElevated,
+                border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               ),
             ),
             const SizedBox(height: 12),
@@ -1260,12 +1377,14 @@ class _PresetEditorDialog extends HookWidget {
             const SizedBox(height: 4),
             TextField(
               controller: newUrlController,
-              style: const TextStyle(fontSize: 14, color: Colors.black),
-              decoration: const InputDecoration(
-                fillColor: Colors.white,
-                border: OutlineInputBorder(),
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              style: TextStyle(fontSize: 14, color: t.textPrimary),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: t.surfaceElevated,
+                border: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: t.border)),
+                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: t.accent, width: 1.5)),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
               ),
             ),
           ],

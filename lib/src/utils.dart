@@ -8,7 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart' show WidgetRef;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:mime/mime.dart' show lookupMimeType;
 import 'package:open_filex/open_filex.dart' show OpenFilex;
-import 'package:tts_mod_vault/src/mods/components/custom_tooltip.dart';
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/mods/enums/context_menu_action_enum.dart'
     show ContextMenuActionEnum;
 import 'package:tts_mod_vault/src/state/backup/models/existing_backup_model.dart'
@@ -65,69 +65,6 @@ You can enter multiple old prefixes by separating them with the | pipe symbol
 
 For example: http://pastebin.com/raw.php?i=|http://pastebin.com/raw/|http://pastebin.com/
 There must be exactly one new prefix, for example: https://pastebin.com/raw/''';
-
-final ThemeData darkTheme = ThemeData(
-  brightness: Brightness.dark,
-  primaryColor: Colors.black,
-  scaffoldBackgroundColor: Color(0xFF141218),
-  appBarTheme: AppBarTheme(
-    backgroundColor: Colors.black,
-    foregroundColor: Colors.white,
-  ),
-  colorScheme: ColorScheme.dark(
-    primary: Colors.black,
-    secondary: Colors.white,
-    error: Colors.red,
-    tertiary: Colors.blue,
-  ),
-  textTheme: TextTheme(
-    bodyLarge: TextStyle(color: Colors.white),
-    bodyMedium: TextStyle(color: Colors.white),
-    bodySmall: TextStyle(color: Colors.white),
-  ),
-  iconTheme: IconThemeData(color: Colors.white),
-  floatingActionButtonTheme: FloatingActionButtonThemeData(
-    backgroundColor: Colors.red,
-    foregroundColor: Colors.white,
-  ),
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black,
-    ),
-  ),
-  outlinedButtonTheme: OutlinedButtonThemeData(
-    style: OutlinedButton.styleFrom(
-      foregroundColor: Colors.white,
-      side: BorderSide(color: Colors.white),
-    ),
-  ),
-  textButtonTheme: TextButtonThemeData(
-    style: TextButton.styleFrom(foregroundColor: Colors.blue),
-  ),
-  navigationRailTheme: NavigationRailThemeData(
-    selectedIconTheme: IconThemeData(color: Colors.black),
-    unselectedIconTheme: IconThemeData(color: Colors.white),
-    selectedLabelTextStyle: TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-    ),
-    unselectedLabelTextStyle: TextStyle(
-      color: Colors.white,
-      fontSize: 16,
-    ),
-  ),
-  inputDecorationTheme: InputDecorationTheme(
-    filled: true,
-    fillColor: Colors.black87,
-    focusedBorder:
-        OutlineInputBorder(borderSide: BorderSide(color: Colors.white)),
-    enabledBorder:
-        OutlineInputBorder(borderSide: BorderSide(color: Colors.white70)),
-    labelStyle: TextStyle(color: Colors.white),
-    hintStyle: TextStyle(color: Colors.white60),
-  ),
-);
 
 final _nonAlphanumericRegex = RegExp(r'[^a-zA-Z0-9]');
 
@@ -277,7 +214,7 @@ Future<void> showConfirmDialogWithCheckbox(
                     children: [
                       Text(title, style: TextStyle(fontSize: 18)),
                       if (showWarning)
-                        CustomTooltip(
+                        AppTooltip(
                             message: warningText,
                             child: Icon(Icons.warning_amber_rounded, size: 32)),
                     ],
@@ -305,7 +242,7 @@ Future<void> showConfirmDialogWithCheckbox(
                         checkboxLabel,
                         style: TextStyle(fontSize: 16),
                       ),
-                      CustomTooltip(
+                      AppTooltip(
                         message: checkboxInfoMessage,
                         child: Icon(
                           Icons.info_outline,
@@ -580,20 +517,20 @@ Future<bool> openUrl(String url) async {
 }
 
 String getGitHubReleaseUrl(String newTagVersion) {
-  return "https://github.com/markomijic/TTS-Mod-Vault/releases/tag/v$newTagVersion";
+  return "https://github.com/idontwantfame/TTS-Mod-Vault/releases/tag/v$newTagVersion";
 }
 
 Future<String> checkForUpdatesOnGitHub() async {
   try {
     final response = await http.get(
       Uri.parse(
-          'https://api.github.com/repos/markomijic/TTS-Mod-Vault/releases/latest'),
+          'https://api.github.com/repos/idontwantfame/TTS-Mod-Vault/releases/latest'),
     );
 
     // For private repository
     /* final response = await http.get(
       Uri.parse(
-          'https://api.github.com/repos/markomijic/TTS-Mod-Vault/releases/latest'),
+          'https://api.github.com/repos/idontwantfame/TTS-Mod-Vault/releases/latest'),
       headers: {
         'Authorization': 'Bearer TOKEN_HERE',
         'Accept': 'application/vnd.github+json',

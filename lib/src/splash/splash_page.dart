@@ -13,13 +13,21 @@ import 'package:tts_mod_vault/src/splash/components/select_directories_widget.da
     show SelectDirectoriesWidget;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
+        appThemeProvider,
         directoriesProvider,
         loaderProvider,
         loadingMessageProvider,
+        logPanelHeightProvider,
+        modListDensityProvider,
+        modListStyleProvider,
+        ModListDensity,
+        ModListStyle,
         modsProvider,
         settingsProvider,
         storageProvider,
         backupCacheProvider;
+import 'package:tts_mod_vault/src/state/storage/storage.dart' show Storage;
+import 'package:tts_mod_vault/src/ui/theme/app_theme_id.dart' show AppThemeId;
 import 'package:tts_mod_vault/src/utils.dart'
     show checkForUpdatesOnGitHub, showDownloadLatestVersionDialog;
 import 'package:window_manager/window_manager.dart' show windowManager;
@@ -52,6 +60,7 @@ class SplashPage extends HookConsumerWidget {
         await ref.read(storageProvider).initializeStorage();
         await ref.read(backupCacheProvider).initialize();
         await ref.read(settingsProvider.notifier).initializeSettings();
+        _applyUiPrefs(ref);
         directoriesNotifier.initializeDirectories();
 
         final packageInfo = await PackageInfo.fromPlatform();
@@ -103,6 +112,43 @@ class SplashPage extends HookConsumerWidget {
                     ),
         ),
       ),
+    );
+  }
+}
+
+
+/// Re-applies saved UI preferences after storage has been initialized.
+/// Providers start with defaults before storage is ready; this syncs them.
+void _applyUiPrefs(WidgetRef ref) {
+  final s = ref.read(storageProvider);
+
+  final theme = s.getUiPref(Storage.appThemeIdKey);
+  if (theme != null) {
+    ref.read(appThemeProvider.notifier).setTheme(
+      AppThemeId.values.firstWhere((e) => e.name == theme,
+          orElse: () => AppThemeId.purpleDark),
+    );
+  }
+
+  final height = s.getUiPref(Storage.logPanelHeightKey);
+  if (height != null) {
+    ref.read(logPanelHeightProvider.notifier).set(
+        double.tryParse(height) ?? 280.0);
+  }
+
+  final style = s.getUiPref(Storage.modListStyleKey);
+  if (style != null) {
+    ref.read(modListStyleProvider.notifier).set(
+      ModListStyle.values.firstWhere((e) => e.name == style,
+          orElse: () => ModListStyle.richRows),
+    );
+  }
+
+  final density = s.getUiPref(Storage.modListDensityKey);
+  if (density != null) {
+    ref.read(modListDensityProvider.notifier).set(
+      ModListDensity.values.firstWhere((e) => e.name == density,
+          orElse: () => ModListDensity.defaultDensity),
     );
   }
 }

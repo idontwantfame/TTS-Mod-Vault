@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useMemoized;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppTooltip, AppTooltipTier, TooltipStrings;
 
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
@@ -19,7 +19,8 @@ import 'package:tts_mod_vault/src/utils.dart'
 import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
     show BulkBackupBehaviorEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show actionInProgressProvider, bulkActionsProvider, filteredModsProvider;
+    show actionInProgressProvider, appThemeDataProvider, bulkActionsProvider,
+        filteredModsProvider;
 
 class BulkActionsMenu extends HookConsumerWidget {
   const BulkActionsMenu({super.key});
@@ -49,11 +50,10 @@ class BulkActionsMenu extends HookConsumerWidget {
           searchQuery.isNotEmpty;
     }, [selectedFolders, sortAndFilterState, searchQuery]);
 
-    return CustomTooltip(
+    return AppTooltip(
       message: bulkActionLimited
           ? 'Bulk actions will apply only to the current selection because of search and/or filters'
           : '',
-      waitDuration: Duration(milliseconds: 750),
       child: Badge(
         label: Text('!'),
         backgroundColor: Colors.grey[600],
@@ -73,19 +73,22 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final actionInProgress = ref.watch(actionInProgressProvider);
     final selectedModType = ref.watch(selectedModTypeProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     return MenuAnchor(
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.white),
+        backgroundColor: WidgetStateProperty.all(t.surface),
       ),
       menuChildren: <Widget>[
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.download, color: Colors.black),
-          child: Text('Download all', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.download, color: t.textPrimary),
+          child: AppTooltip(
+            message: 'Download all missing assets for every mod in the current view',
+            child: Text('Download all', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -96,11 +99,13 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.archive, color: Colors.black),
-          child: Text('Backup all', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.archive, color: t.textPrimary),
+          child: AppTooltip(
+            message: 'Create a backup archive for every mod in the current view',
+            child: Text('Backup all', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -123,13 +128,15 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.download, color: Colors.black),
-          trailingIcon: Icon(Icons.archive, color: Colors.black),
-          child: Text('Download & backup all',
-              style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.download, color: t.textPrimary),
+          trailingIcon: Icon(Icons.archive, color: t.textPrimary),
+          child: AppTooltip(
+            message: 'Download missing assets then create backup archives',
+            child: Text('Download & backup all',
+              style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -155,12 +162,13 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
         if (selectedModType == ModTypeEnum.mod)
           MenuItemButton(
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
             ),
-            leadingIcon: Icon(Icons.update, color: Colors.black),
-            child:
-                Text('Update all mods', style: TextStyle(color: Colors.black)),
+            leadingIcon: Icon(Icons.update, color: t.textPrimary),
+            child: AppTooltip(
+            message: 'Check Steam Workshop for newer versions and re-download',
+            child: Text('Update all mods', style: TextStyle(color: t.textPrimary))),
             onPressed: () {
               if (actionInProgress) return;
 
@@ -187,12 +195,13 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
           ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.delete, color: Colors.black),
-          child:
-              Text('Delete all assets', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.delete, color: t.textPrimary),
+          child: AppTooltip(
+            message: 'Delete all downloaded asset files (mod JSON files are kept)',
+            child: Text('Delete all assets', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 
@@ -210,27 +219,33 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
             );
           },
         ),
-        MenuItemButton(
-          style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+        AppTooltip(
+          message: TooltipStrings.bulkCheckUrls,
+          tier: AppTooltipTier.complex,
+          child: MenuItemButton(
+            style: MenuItemButton.styleFrom(
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
+            ),
+            leadingIcon: Icon(Icons.link, color: t.textPrimary),
+            child: Text('Check all URLs', style: TextStyle(color: t.textPrimary)),
+            onPressed: () {
+              if (actionInProgress) return;
+              ref
+                  .read(bulkActionsProvider.notifier)
+                  .checkUrlsAllMods(ref.read(filteredModsProvider));
+            },
           ),
-          leadingIcon: Icon(Icons.link, color: Colors.black),
-          child: Text('Check all URLs', style: TextStyle(color: Colors.black)),
-          onPressed: () {
-            if (actionInProgress) return;
-            ref
-                .read(bulkActionsProvider.notifier)
-                .checkUrlsAllMods(ref.read(filteredModsProvider));
-          },
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.edit, color: Colors.black),
-          child: Text('Update all URLs', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.edit, color: t.textPrimary),
+          child: AppTooltip(
+            message: 'Find and replace a URL prefix in asset links across every mod',
+            child: Text('Update all URLs', style: TextStyle(color: t.textPrimary))),
           onPressed: () {
             if (actionInProgress) return;
 

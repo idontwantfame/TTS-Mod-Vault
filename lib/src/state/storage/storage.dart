@@ -25,6 +25,11 @@ class Storage {
   static const String savesDirKey = 'SavesDir';
   static const String backupsDirKey = 'BackupsDir';
   static const String settingsKey = 'TTSModVaultSettings';
+  static const String appThemeIdKey = 'AppThemeId';
+  static const String logPanelHeightKey = 'LogPanelHeight';
+  static const String detailPanelExpandedKey = 'DetailPanelExpanded';
+  static const String modListStyleKey = 'ModListStyle';
+  static const String modListDensityKey = 'ModListDensity';
 
   Future<void> initializeStorage() async {
     debugPrint("initializeStorage");
@@ -238,6 +243,11 @@ class Storage {
     await Hive.box<dynamic>(urlsBox).clear();
     await Hive.box<String>(metadataBox).clear();
   }
+
+  // UI PREFERENCES
+  // Returns null if storage isn't initialized yet (safe to call before initializeStorage)
+  String? getUiPref(String key) => _initialized ? _appDataBox.get(key) : null;
+  Future<void> saveUiPref(String key, String value) => _appDataBox.put(key, value);
 
   Future<void> pruneOrphanedModData(Set<String> validJsonFileNames) async {
     // Prune _urlsBox

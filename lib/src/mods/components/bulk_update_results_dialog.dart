@@ -1,10 +1,10 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/state/bulk_actions/mod_update_result.dart'
     show ModUpdateResult, ModUpdateStatus;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppDialog, AppButton, AppButtonVariant;
 
 class BulkUpdateResultsDialog extends HookConsumerWidget {
   final List<ModUpdateResult> results;
@@ -26,71 +26,58 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
     final failed =
         results.where((r) => r.status == ModUpdateStatus.failed).toList();
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-      child: AlertDialog(
-        title: Row(
-          children: [
-            Icon(
-              wasCancelled ? Icons.warning_amber_rounded : Icons.check_circle,
-              color: wasCancelled ? Colors.orange : Colors.green,
-            ),
-            const SizedBox(width: 8),
-            Text(wasCancelled ? 'Update Cancelled' : 'Update Complete'),
-          ],
-        ),
-        content: SizedBox(
-          width: 700,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Summary counts
-              _buildSummary(updated.length, upToDate.length, failed.length),
+    return AppDialog(
+      title: wasCancelled ? 'Update Cancelled' : 'Update Complete',
+      width: 700,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Summary counts
+          _buildSummary(updated.length, upToDate.length, failed.length),
 
-              const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-              // Scrollable list of mods
-              Flexible(
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (updated.isNotEmpty)
-                        _buildSection(
-                          'Updated',
-                          updated,
-                          Colors.green,
-                          Icons.check_circle,
-                        ),
-                      if (upToDate.isNotEmpty)
-                        _buildSection(
-                          'Already Up to Date',
-                          upToDate,
-                          Colors.blue,
-                          Icons.info,
-                        ),
-                      if (failed.isNotEmpty)
-                        _buildSection(
-                          'Failed',
-                          failed,
-                          Colors.red,
-                          Icons.error,
-                        ),
-                    ],
-                  ),
-                ),
+          // Scrollable list of mods
+          Flexible(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (updated.isNotEmpty)
+                    _buildSection(
+                      'Updated',
+                      updated,
+                      Colors.green,
+                      Icons.check_circle,
+                    ),
+                  if (upToDate.isNotEmpty)
+                    _buildSection(
+                      'Already Up to Date',
+                      upToDate,
+                      Colors.blue,
+                      Icons.info,
+                    ),
+                  if (failed.isNotEmpty)
+                    _buildSection(
+                      'Failed',
+                      failed,
+                      Colors.red,
+                      Icons.error,
+                    ),
+                ],
               ),
-            ],
-          ),
-        ),
-        actions: [
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+            ),
           ),
         ],
       ),
+      actions: [
+        AppButton(
+          label: 'Close',
+          onPressed: () => Navigator.pop(context),
+          variant: AppButtonVariant.secondary,
+        ),
+      ],
     );
   }
 

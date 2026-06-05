@@ -1,11 +1,11 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useState;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
     show PostBackupDeletionEnum;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppDialog, AppButton, AppButtonVariant;
 
 class BulkDeleteDialog extends HookConsumerWidget {
   final String title;
@@ -26,38 +26,17 @@ class BulkDeleteDialog extends HookConsumerWidget {
         .where((e) => e != PostBackupDeletionEnum.none)
         .toList();
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-      child: AlertDialog(
-        actions: [
-          Row(
-            spacing: 8,
-            children: [
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  onConfirm.call(selectedDeletion.value);
-                  Navigator.pop(context);
-                },
-                child: const Text('Confirm'),
-              ),
-            ],
+    return AppDialog(
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 16,
+        children: [
+          Text(
+            title,
+            style:
+                const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
           ),
-        ],
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 16,
-          children: [
-            Text(
-              title,
-              style:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-            ),
             Row(
               spacing: 8,
               children: [
@@ -103,7 +82,22 @@ class BulkDeleteDialog extends HookConsumerWidget {
             ),
           ],
         ),
-      ),
+      actions: [
+        const Spacer(),
+        AppButton(
+          label: 'Cancel',
+          onPressed: () => Navigator.pop(context),
+          variant: AppButtonVariant.secondary,
+        ),
+        AppButton(
+          label: 'Confirm',
+          onPressed: () {
+            onConfirm.call(selectedDeletion.value);
+            Navigator.pop(context);
+          },
+          variant: AppButtonVariant.primary,
+        ),
+      ],
     );
   }
 }

@@ -4,7 +4,7 @@ description: "Download and backup assets for your Tabletop Simulator mods"
 # Prevent accidental publishing to pub.dev.
 publish_to: "none"
 
-version: 3.0.1+1
+version: 3.5.0+1
 
 environment:
   sdk: ^3.5.4
@@ -39,6 +39,7 @@ dependencies:
   supabase_flutter: ^2.12.0
   shared_preferences: ^2.5.4
   flutter_dotenv: ^6.0.0
+  flutter_markdown: ^0.7.7+1
   
 dev_dependencies:
   flutter_test:
@@ -66,4 +67,5 @@ flutter:
 
   assets:
     - .env
+    - CHANGELOG.md
     - assets/icon/

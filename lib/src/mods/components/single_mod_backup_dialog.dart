@@ -1,5 +1,3 @@
-import 'dart:ui' show ImageFilter;
-
 import 'package:file_picker/file_picker.dart' show FilePicker;
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart' show useMemoized, useState;
@@ -13,6 +11,8 @@ import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show Mod;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show directoriesProvider, settingsProvider;
+import 'package:tts_mod_vault/src/ui/ui.dart'
+    show AppDialog, AppButton, AppButtonVariant;
 
 enum BackupLocationChoice { replace, selectNew }
 
@@ -60,80 +60,20 @@ class SingleModBackupDialog extends HookConsumerWidget {
     final setBackupFolderMessage =
         "Set a backup folder in Settings to show backup state after a restart or data refresh\nOr disable Backup State feature in Settings to hide this warning";
 
-    return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-      child: AlertDialog(
-        actions: [
-          Row(
-            spacing: 8,
-            children: [
-              if (!hasExistingBackup ||
-                  locationChoice.value == BackupLocationChoice.selectNew)
-                ElevatedButton.icon(
-                  onPressed: () async {
-                    String? folder = await FilePicker.platform.getDirectoryPath(
-                      lockParentWindow: true,
-                      initialDirectory: backupsDir.isEmpty ? null : backupsDir,
-                    );
-                    if (folder != null) {
-                      selectedFolder.value = folder;
-                    }
-                  },
-                  icon: Icon(Icons.folder),
-                  label: const Text('Select folder'),
-                ),
-              const Spacer(),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: effectiveFolder == null || effectiveFolder.isEmpty
-                    ? null
-                    : () {
-                        // Remember this folder for next time if it's a newly
-                        // selected directory (not just re-using an existing backup)
-                        final isSelectingNewFolder =
-                            !hasExistingBackup ||
-                            locationChoice.value ==
-                                BackupLocationChoice.selectNew;
-                        if (isSelectingNewFolder &&
-                            selectedFolder.value.isNotEmpty &&
-                            selectedFolder.value != backupsDir) {
-                          final dirNotifier =
-                              ref.read(directoriesProvider.notifier);
-                          dirNotifier.updateBackupsDirectory(
-                              selectedFolder.value);
-                          dirNotifier.saveDirectories();
-                        }
-
-                        onConfirm.call(
-                          effectiveFolder,
-                          downloadMissingFirst.value,
-                          selectedPostBackupDeletion.value,
-                        );
-                        Navigator.pop(context);
-                      },
-                child: const Text('Confirm'),
-              ),
-            ],
+    return AppDialog(
+      width: 500,
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 8,
+        children: [
+          Text(
+            'Backup ${mod.saveName}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style:
+                const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
           ),
-        ],
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          spacing: 8,
-          children: [
-            SizedBox(
-              width: 500,
-              child: Text(
-                'Backup ${mod.saveName}',
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style:
-                    const TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-              ),
-            ),
             // Backup location choice (only if backup exists)
             if (hasExistingBackup)
               Row(
@@ -277,7 +217,59 @@ class SingleModBackupDialog extends HookConsumerWidget {
                   'Backup to: ${selectedFolder.value.isEmpty ? "(select folder)" : selectedFolder.value}'),
           ],
         ),
-      ),
+      actions: [
+        if (!hasExistingBackup ||
+            locationChoice.value == BackupLocationChoice.selectNew)
+          AppButton(
+            label: 'Select folder',
+            onPressed: () async {
+              String? folder = await FilePicker.platform.getDirectoryPath(
+                lockParentWindow: true,
+                initialDirectory: backupsDir.isEmpty ? null : backupsDir,
+              );
+              if (folder != null) {
+                selectedFolder.value = folder;
+              }
+            },
+            icon: Icon(Icons.folder),
+          ),
+        const Spacer(),
+        AppButton(
+          label: 'Cancel',
+          onPressed: () => Navigator.pop(context),
+          variant: AppButtonVariant.secondary,
+        ),
+        AppButton(
+          label: 'Confirm',
+          onPressed: effectiveFolder == null || effectiveFolder.isEmpty
+              ? null
+              : () {
+                  // Remember this folder for next time if it's a newly
+                  // selected directory (not just re-using an existing backup)
+                  final isSelectingNewFolder =
+                      !hasExistingBackup ||
+                      locationChoice.value ==
+                          BackupLocationChoice.selectNew;
+                  if (isSelectingNewFolder &&
+                      selectedFolder.value.isNotEmpty &&
+                      selectedFolder.value != backupsDir) {
+                    final dirNotifier =
+                        ref.read(directoriesProvider.notifier);
+                    dirNotifier.updateBackupsDirectory(
+                        selectedFolder.value);
+                    dirNotifier.saveDirectories();
+                  }
+
+                  onConfirm.call(
+                    effectiveFolder,
+                    downloadMissingFirst.value,
+                    selectedPostBackupDeletion.value,
+                  );
+                  Navigator.pop(context);
+                },
+          variant: AppButtonVariant.primary,
+        ),
+      ],
     );
   }
 }

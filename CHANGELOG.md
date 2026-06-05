@@ -1,5 +1,32 @@
 # Changelog
 
+## v3.5.0
+
+### UI rework
+
+- **New theme system** — three dark palettes (Purple Dark, Blue Slate, Black Teal) switchable in Settings → Interface
+- **Top navigation bar** — replaces the sidebar; Mods / Saves / Saved Objects / Backups tabs at the top
+- **Collapsible mod info panel** — click any mod to open the detail panel on the right; click it again to close it
+- **Resizable log console** — drag the top edge to any height; S / M / L preset buttons for quick snapping
+- **Comprehensive tooltips** — every button, tab, menu item, and icon has a descriptive hover tooltip (300 ms delay)
+- **Consistent dark theming** — all dropdowns, settings dialogs, filter menus, checkboxes, text fields, and context menus now use the active theme palette
+
+### Performance
+
+- **Image processing off-thread** — thumbnail decode / crop-resize / encode runs in a background isolate; eliminated the 0.5–2 s UI freeze per mod download
+- **BSON → JSON conversion off-thread** — Workshop mod conversion no longer blocks the main thread
+- **Downloads non-blocking** — active downloads no longer lock the mod list; scroll, select, and browse freely while assets download
+- **Batched asset state updates** — N separate map copies reduced to one per completed batch
+- **Throttled progress updates** — capped at one UI update per 100 ms during single-file downloads
+
+### Other
+
+- **Changelog rendered from file** — the in-app changelog dialog reads and renders `CHANGELOG.md` directly; no more hardcoded release notes
+- **Update check points to this fork** — version checks and release links use `idontwantfame/TTS-Mod-Vault`
+- **README updated** — fork attribution, updated download links, "What's new" section
+
+---
+
 ## v3.0.1
 
 ### Critical fix
@@ -83,3 +110,141 @@ Builds on top of [v2.0.0](https://github.com/markomijic/TTS-Mod-Vault/releases/t
 **Linux:** Extract the tar.gz and run the executable. Copy `linux/tts_mod_vault.desktop` to `~/.local/share/applications/` for launcher integration.
 
 **macOS:** Extract the zip. Right-click the `.app` → *Open* to bypass Gatekeeper on first launch (app is unsigned).
+
+---
+
+## v2.0.0
+
+> It is recommended to clear the cache on the first run (Refresh → Clear Vault cache)
+
+**BREAKING CHANGE:** Saved object backup file naming has been changed to `"Filename (saved object).ttsmod"`. Backups of saved objects made with previous versions will not be detected until renamed.
+
+### Features
+
+- Updated UI layout with sidebar
+- Backups tab
+- Backup information caching for faster loading times
+- Check for shared asset URLs
+- Check for invalid asset URLs
+- Mod and asset file deletion
+- Multi-select support for bulk actions
+- Searching assets of selected mod
+- Sorting by missing assets and recently updated
+- Filtering by asset status and type
+- Filtering mods by backup asset count mismatch
+- New setting for Asset URL font size
+- New setting for custom Saves folder path
+- New settings for excluding audio, subfolders and domains
+- Per-mod audio asset handling
+- JSON import support
+- Update URL presets in Settings
+- Mod updates from Steam Workshop
+
+### Changes
+
+- Updated saved object backup naming
+- Clear cache moved to Refresh and renamed to Clear Vault cache
+- Removed setting to show or hide URL replacement features
+- Various UI updates and refinements
+- General bug fixes and improvements
+
+---
+
+## v1.3.0
+
+> Due to asset URL bug fixes in this version, it is recommended to clear the cache on the first run. The new URL replacement features are disabled by default and can be enabled in Settings.
+
+### Features
+
+- Clear cache — available under Tools
+- Update URLs — lets you replace prefixes or entire URLs, either for a single item or as a bulk action
+
+### Changes
+
+- New Setting — Force JSON filename inclusion in backup filename for all cases
+- Last selected asset URL now stays highlighted after closing the context menu
+- Removed the tool for renaming old backups
+- Fixed Steam CDN URLs not downloading when a trailing `/` was missing
+- Fixed URLs with spaces breaking UI and cache checks
+- Fixed URLs with `\r` or `\n` suffixes breaking cache checks and downloads
+- Fixed *Download Workshop Mod by ID* failing to create a JSON file in cases where BsonBinary exists within JSON data
+
+---
+
+## v1.2.1
+
+### Changes
+
+- Fixed URL replacement not working with the old URL format (`http://cloud-3.steamusercontent.com/`)
+- Fixed loading failures caused by backup file names containing Unicode characters
+- Added support for an additional date format in mod JSON files
+- Reduced memory usage when creating a backup
+- Reduced loading times for backup files
+
+---
+
+## v1.2.0
+
+> Backup filename format changed. v1.2.0 updates the backup file naming format to match TTS Mod Backup. Backups created with TTS Mod Vault v1.0.0–v1.1.0 must be renamed to work with the new Backup State feature. A renaming tool is available under Tools → Rename old backups.
+
+### Features
+
+- Backup State
+- Sort & Filter
+- Bulk actions: Download All, Backup All, Download & Backup All
+- Download Workshop Mod by ID
+
+### Changes
+
+- UI updates
+- New settings options
+- General improvements and fixes
+
+---
+
+## v1.1.0
+
+### Features
+
+- Search
+- Viewing images
+- Support for Saves and Saved Objects
+- Separate selection of Mods and Saves folders
+- Opening audio, image and PDF files
+- URL replacement tool
+
+### Changes
+
+- Reworked loading system for faster load times
+- Replaced storage solution with faster alternative for improved performance
+- General improvements and fixes
+
+---
+
+## v1.0.2
+
+### Changes
+
+- Fixed mods not appearing if they were in a folder within the Workshop folder
+- Fixed issue where downloading files from Dropbox links (where files were deleted) incorrectly marked them as downloaded
+
+---
+
+## v1.0.1
+
+### Changes
+
+- Fixed asset lists not updating due to incorrect reading of last time mod was updated
+- Added Download from GitHub button to "Check for updates" dialog
+- Performance improvements when opening file explorer
+
+---
+
+## v1.0.0
+
+### Features
+
+- Download — Download all mod assets locally
+- Backup — Create backups of your mods
+- Import Backup — Restore existing `.ttsmod` file backups
+- Cleanup — Remove unused cached files that aren't part of your installed mods

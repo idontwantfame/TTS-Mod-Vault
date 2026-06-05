@@ -1,8 +1,7 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/settings/settings_dialog.dart'
     show SectionHeader;
 
@@ -33,7 +32,7 @@ class EditableStringList extends StatelessWidget {
           spacing: 4,
           children: [
             SectionHeader(title: title),
-            CustomTooltip(
+            AppTooltip(
               message: tooltipMessage,
               child: Icon(Icons.info_outline),
             ),

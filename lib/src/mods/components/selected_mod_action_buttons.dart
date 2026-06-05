@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/mods/components/components.dart'
     show SelectedModActionsMenu, SingleModBackupDialog;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
     show PostBackupDeletionEnum;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show Mod;
@@ -38,7 +39,9 @@ class SelectedModActionButtons extends HookConsumerWidget {
         spacing: 8,
         runSpacing: 8,
         children: [
-          ElevatedButton.icon(
+          AppTooltip(
+            message: 'Download all missing assets for this mod',
+            child: ElevatedButton.icon(
             icon: Icon(Icons.download),
             onPressed: hasMissingFiles
                 ? () async {
@@ -56,8 +59,10 @@ class SelectedModActionButtons extends HookConsumerWidget {
                   }
                 : null,
             label: const Text('Download'),
-          ),
-          ElevatedButton.icon(
+          )),
+          AppTooltip(
+            message: 'Backup this mod (optionally download first or delete after)',
+            child: ElevatedButton.icon(
             icon: Icon(Icons.archive),
             onPressed: () {
               if (actionInProgress) {
@@ -120,8 +125,11 @@ class SelectedModActionButtons extends HookConsumerWidget {
               );
             },
             label: const Text('Backup'),
+          )),
+          AppTooltip(
+            message: 'More actions',
+            child: SelectedModActionsMenu(selectedMod: selectedMod),
           ),
-          SelectedModActionsMenu(selectedMod: selectedMod),
         ],
       ),
     );

@@ -5,8 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart'
     show useState, useTextEditingController;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
-import 'package:tts_mod_vault/src/mods/components/components.dart'
-    show CustomTooltip;
+import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show selectedModTypeProvider, settingsProvider;
 import 'package:tts_mod_vault/src/utils.dart'
@@ -63,7 +62,7 @@ class UpdateUrlsDialog extends HookConsumerWidget {
               children: [
                 Text('Update URLs'),
                 Spacer(),
-                CustomTooltip(
+                AppTooltip(
                   message: showExample.value ? 'Hide example' : 'Show example',
                   child: IconButton(
                     icon: Icon(
@@ -75,7 +74,7 @@ class UpdateUrlsDialog extends HookConsumerWidget {
                     },
                   ),
                 ),
-                CustomTooltip(
+                AppTooltip(
                   message: 'Copy | pipe symbol to clipboard',
                   child: IconButton(
                     padding: EdgeInsets.zero,
@@ -87,7 +86,7 @@ class UpdateUrlsDialog extends HookConsumerWidget {
                     icon: Icon(Icons.copy),
                   ),
                 ),
-                CustomTooltip(
+                AppTooltip(
                   message: updateUrlsHelp,
                   child: Icon(
                     Icons.info_outline,
