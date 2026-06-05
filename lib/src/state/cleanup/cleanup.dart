@@ -8,6 +8,8 @@ import 'package:tts_mod_vault/src/state/cleanup/cleanup_state.dart'
     show CleanUpState, CleanUpStatusEnum;
 import 'package:tts_mod_vault/src/state/enums/asset_type_enum.dart'
     show AssetTypeEnum;
+import 'package:tts_mod_vault/src/state/mods/mods_isolates.dart'
+    show extractUrlsFromJson;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show directoriesProvider, modsProvider, storageProvider;
 import 'package:tts_mod_vault/src/utils.dart'
@@ -40,12 +42,29 @@ class CleanupNotifier extends StateNotifier<CleanUpState> {
       final bulkUrls =
           ref.read(storageProvider).getModUrlsBulk(allJsonFileNames);
 
+      // For mods not yet in the cache, extract URLs fresh from their JSON so
+      // their assets are never incorrectly treated as unreferenced.
+      final modsNeedingExtraction = allMods
+          .where((mod) => bulkUrls[mod.jsonFileName] == null)
+          .toList();
+
+      final freshUrlsList = await Future.wait(
+        modsNeedingExtraction
+            .map((mod) => extractUrlsFromJson(mod.jsonFilePath)),
+      );
+
+      final Map<String, Map<String, String>> freshUrls = {
+        for (int i = 0; i < modsNeedingExtraction.length; i++)
+          modsNeedingExtraction[i].jsonFileName: freshUrlsList[i],
+      };
+
       final referencedFiles = await Isolate.run(
         () {
           final Set<String> files = {};
 
           for (final mod in allMods) {
-            final urls = bulkUrls[mod.jsonFileName];
+            final urls =
+                bulkUrls[mod.jsonFileName] ?? freshUrls[mod.jsonFileName];
             if (urls == null) continue;
 
             for (final url in urls.entries) {
@@ -181,7 +200,7 @@ Future<List<String>> processDirectoryInIsolate(
 
     for (final file in files) {
       if (file is File) {
-        String fileName = p.basenameWithoutExtension(file.path);
+        String fileName = p.basenameWithoutExtension(file.path).toLowerCase();
 
         // Ignore rawt/rawm files that are not from URL download
         if (fileName.startsWith("file")) continue;
