@@ -23,14 +23,15 @@ class AppTooltip extends ConsumerWidget {
     return Tooltip(
       message: message,
       preferBelow: false,
-      waitDuration: Duration(milliseconds: tier == AppTooltipTier.complex ? 750 : 500),
+      waitDuration: Duration(milliseconds: tier == AppTooltipTier.complex ? 600 : 300),
       showDuration: Duration(seconds: tier == AppTooltipTier.complex ? 5 : 3),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: t.surface,
-        border: Border.all(color: t.border),
+        color: t.surfaceElevated,
+        border: Border.all(color: t.borderHighlight),
         borderRadius: BorderRadius.circular(4),
       ),
-      textStyle: TextStyle(color: t.textSecondary, fontSize: 12),
+      textStyle: TextStyle(color: t.textPrimary, fontSize: 12),
       child: child,
     );
   }

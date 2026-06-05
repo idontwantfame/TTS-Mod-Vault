@@ -6,12 +6,12 @@ import 'dart:ui' show ImageFilter;
 import 'package:tts_mod_vault/src/mods/components/components.dart'
     show showUpdateUrlsDialog;
 import 'package:tts_mod_vault/src/ui/ui.dart'
-    show AppTooltip, AppTooltipTier, TooltipStrings;
+    show AppThemeData, AppTooltip, AppTooltipTier, TooltipStrings;
 import 'package:tts_mod_vault/src/mods/components/url_check_results_dialog.dart'
     show UrlCheckResultsDialog;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show Mod;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show actionInProgressProvider, deleteAssetsProvider, downloadProvider, modsProvider;
+    show actionInProgressProvider, appThemeDataProvider, deleteAssetsProvider, downloadProvider, modsProvider;
 import 'package:tts_mod_vault/src/utils.dart'
     show showSnackBar, copyToClipboard;
 import 'package:tts_mod_vault/src/state/delete_assets/delete_assets_state.dart'
@@ -28,19 +28,20 @@ class SelectedModActionsMenu extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final actionInProgress = ref.watch(actionInProgressProvider);
     final modsNotifier = ref.watch(modsProvider.notifier);
+    final t = ref.watch(appThemeDataProvider);
 
     return MenuAnchor(
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.white),
+        backgroundColor: WidgetStateProperty.all(t.surface),
       ),
       menuChildren: <Widget>[
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.image, color: Colors.black),
-          child: Text('View Images', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.image, color: t.textSecondary),
+          child: Text('View Images', style: TextStyle(color: t.textPrimary)),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -51,12 +52,12 @@ class SelectedModActionsMenu extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.link, color: Colors.black),
+          leadingIcon: Icon(Icons.link, color: t.textSecondary),
           child: Text('Check for invalid URLs',
-              style: TextStyle(color: Colors.black)),
+              style: TextStyle(color: t.textPrimary)),
           onPressed: () {
             if (actionInProgress) return;
             showDialog(
@@ -67,12 +68,12 @@ class SelectedModActionsMenu extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.copy, color: Colors.black),
+          leadingIcon: Icon(Icons.copy, color: t.textSecondary),
           child:
-              Text('Copy missing URLs', style: TextStyle(color: Colors.black)),
+              Text('Copy missing URLs', style: TextStyle(color: t.textPrimary)),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -153,12 +154,12 @@ class SelectedModActionsMenu extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.delete_sweep, color: Colors.black),
+          leadingIcon: Icon(Icons.delete_sweep, color: t.textSecondary),
           child:
-              Text('Delete asset files', style: TextStyle(color: Colors.black)),
+              Text('Delete asset files', style: TextStyle(color: t.textPrimary)),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -211,6 +212,7 @@ class SelectedModActionsMenu extends HookConsumerWidget {
                     deleteAssetsNotifier,
                     modsNotifier,
                     selectedMod,
+                    t,
                     ref,
                   );
                 }
@@ -236,11 +238,11 @@ class SelectedModActionsMenu extends HookConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.edit, color: Colors.black),
-          child: Text('Update URLs', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.edit, color: t.textSecondary),
+          child: Text('Update URLs', style: TextStyle(color: t.textPrimary)),
           onPressed: () async {
             if (actionInProgress) return;
 
@@ -266,8 +268,8 @@ class SelectedModActionsMenu extends HookConsumerWidget {
       ) {
         return IconButton(
           style: IconButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surfaceElevated,
+            foregroundColor: t.textSecondary,
             minimumSize: Size(32, 32),
             maximumSize: Size(32, 32),
           ),
@@ -296,6 +298,7 @@ void _showDeleteConfirmDialog(
   DeleteAssetsNotifier deleteAssetsNotifier,
   modsNotifier,
   Mod selectedMod,
+  AppThemeData t,
   WidgetRef ref,
 ) async {
   bool includeShared = false;
@@ -335,8 +338,8 @@ void _showDeleteConfirmDialog(
                     if (hasSharedAssets) ...[
                       CheckboxListTile(
                         value: includeShared,
-                        checkColor: Colors.black,
-                        activeColor: Colors.white,
+                        checkColor: t.surface,
+                        activeColor: t.accent,
                         visualDensity: VisualDensity.compact,
                         onChanged: (value) {
                           setState(() {
@@ -440,6 +443,7 @@ void _showDeleteConfirmDialog(
             deleteAssetsNotifier,
             modsNotifier,
             selectedMod,
+            t,
             ref,
           );
         }

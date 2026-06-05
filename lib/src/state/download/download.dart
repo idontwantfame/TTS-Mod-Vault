@@ -222,10 +222,11 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
           sinceLastRefresh += batchCount;
           if (sinceLastRefresh >= refreshEvery) {
             sinceLastRefresh = 0;
+            // Only update the state — avoid the O(n×m) updateSelectedMod()
+            // during downloads; full refresh happens after all downloads.
             await ref
                 .read(existingAssetListsProvider.notifier)
                 .setExistingAssetsListByType(type);
-            await ref.read(modsProvider.notifier).updateSelectedMod(mod);
           }
         },
       ));
@@ -501,13 +502,11 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     } catch (e) {
       debugPrint('downloadAllFiles error: $e');
     } finally {
-      // Add successful downloads to existing assets list
+      // Add successful downloads in one state update instead of N updates
       if (successfulDownloads.isNotEmpty) {
-        final existingAssetsNotifier =
-            ref.read(existingAssetListsProvider.notifier);
-        for (final (filename, filepath) in successfulDownloads) {
-          existingAssetsNotifier.addExistingAsset(type, filename, filepath);
-        }
+        ref
+            .read(existingAssetListsProvider.notifier)
+            .addExistingAssetsBatch(type, successfulDownloads);
       }
 
       if (!downloadingAllFiles) {

@@ -70,6 +70,15 @@ class ExistingAssetsNotifier extends StateNotifier<ExistingAssetsListsState> {
     _updateStateByType(type, updatedMap);
   }
 
+  void addExistingAssetsBatch(AssetTypeEnum type, List<(String, String)> entries) {
+    if (entries.isEmpty) return;
+    final updatedMap = Map<String, String>.from(_getAssetMapByType(type));
+    for (final (filename, filepath) in entries) {
+      updatedMap[filename] = filepath;
+    }
+    _updateStateByType(type, updatedMap);
+  }
+
   Map<String, String> _getAssetMapByType(AssetTypeEnum type) {
     return switch (type) {
       AssetTypeEnum.assetBundle => state.assetBundles,
