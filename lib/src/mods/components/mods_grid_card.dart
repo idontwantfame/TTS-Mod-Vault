@@ -55,8 +55,6 @@ class ModsGridCard extends HookConsumerWidget {
       return '$missingCount missing $fileLabel';
     }, [mod.existingAssetCount]);
 
-
-
     final backupStatusColor = useMemoized(
       () => switch (mod.backupStatus) {
         ExistingBackupStatusEnum.upToDate => Colors.green,
