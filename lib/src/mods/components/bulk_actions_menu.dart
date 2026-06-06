@@ -114,12 +114,14 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
               builder: (context) => BulkBackupDialog(
                 title: 'Backup all',
                 initialBehavior: BulkBackupBehaviorEnum.replaceIfOutOfDate,
-                onConfirm: (behavior, folder, postBackupDeletion) {
+                onConfirm:
+                    (behavior, folder, postBackupDeletion, setAsDefault) {
                   ref.read(bulkActionsProvider.notifier).backupAllMods(
                         ref.read(filteredModsProvider),
                         behavior,
                         folder,
                         postBackupDeletion,
+                        setAsDefault,
                       );
                 },
               ),
@@ -145,7 +147,8 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
               builder: (context) => BulkBackupDialog(
                 title: 'Download & backup all',
                 initialBehavior: BulkBackupBehaviorEnum.replaceIfOutOfDate,
-                onConfirm: (behavior, folder, postBackupDeletion) {
+                onConfirm:
+                    (behavior, folder, postBackupDeletion, setAsDefault) {
                   ref
                       .read(bulkActionsProvider.notifier)
                       .downloadAndBackupAllMods(
@@ -153,6 +156,7 @@ class _BulkActionsDropDownButton extends HookConsumerWidget {
                         behavior,
                         folder,
                         postBackupDeletion,
+                        setAsDefault,
                       );
                 },
               ),

@@ -229,23 +229,6 @@ Map<String, String> _processUrl(String urlKey, String value) {
   return finalUrls;
 }
 
-// Single combined regex built once from all AssetTypeEnum subtypes.
-// - alternation of every asset key in one pass (group 1 = key)
-// - \\* before each quote tolerates escaped JSON embedded in Lua scripts
-//   (e.g. \"MeshURL\": \"https://...\" spawned at runtime via spawnObjectJSON)
-// - value capture (group 2) stops at the first " or \, i.e. the quote or the
-//   \" that closes the value
-final _assetUrlRegex = (() {
-  final assetKeys = [
-    for (final value in AssetTypeEnum.values) ...value.subtypes,
-  ].map(RegExp.escape).join('|');
-
-  return RegExp(
-    '\\\\*"($assetKeys)\\\\*"\\s*:\\s*\\\\*"([^"\\\\]*)',
-    caseSensitive: true,
-  );
-})();
-
 // Fast regex-based URL extraction using exact AssetTypeEnum subtypes.
 // Matches both plain JSON ("MeshURL": "...") and asset URLs embedded as escaped
 // JSON inside Lua scripts (\"MeshURL\": \"...\") in a single pass.
