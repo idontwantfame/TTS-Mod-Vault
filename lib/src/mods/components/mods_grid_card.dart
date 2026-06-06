@@ -117,9 +117,9 @@ class ModsGridCard extends HookConsumerWidget {
             border: Border.all(
               width: 4,
               color: isSelected
-                  ? Colors.white
+                  ? t.accent
                   : isHovered.value
-                      ? Colors.white70
+                      ? t.borderHighlight
                       : Colors.transparent,
             ),
           ),
