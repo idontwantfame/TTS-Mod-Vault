@@ -9,6 +9,7 @@ import 'package:tts_mod_vault/src/mods/components/components.dart'
     show MessageProgressIndicator;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
+        appThemeDataProvider,
         directoriesProvider,
         loaderProvider,
         loadingMessageProvider,
@@ -27,6 +28,7 @@ class SelectDirectoriesWidget extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     final directoriesNotifier = ref.watch(directoriesProvider.notifier);
     final loadingMessage = ref.watch(loadingMessageProvider);
 
@@ -64,8 +66,8 @@ class SelectDirectoriesWidget extends HookConsumerWidget {
           children: [
             Checkbox(
               value: separateSavesDir.value,
-              checkColor: Colors.black,
-              activeColor: Colors.white,
+              checkColor: t.surface,
+              activeColor: t.accent,
               visualDensity: VisualDensity.compact,
               onChanged: (value) {
                 separateSavesDir.value = value ?? false;

@@ -1,6 +1,8 @@
 import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart' show ProviderScope;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/settings/settings_dialog.dart'
     show SectionHeader;
@@ -97,6 +99,7 @@ class EditableStringList extends StatelessWidget {
 
   Future<String?> _editDialog(
       BuildContext context, String initial, String title) async {
+    final t = ProviderScope.containerOf(context).read(appThemeDataProvider);
     final controller = TextEditingController(text: initial);
 
     return showDialog<String>(
@@ -110,15 +113,15 @@ class EditableStringList extends StatelessWidget {
             child: TextField(
               controller: controller,
               autofocus: true,
-              cursorColor: Colors.black,
+              cursorColor: t.accent,
               keyboardType: TextInputType.number,
               style:
-                  TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                  TextStyle(color: t.textPrimary, fontWeight: FontWeight.bold),
               decoration: InputDecoration(
-                fillColor: Colors.white,
+                fillColor: t.surfaceElevated,
                 border: OutlineInputBorder(),
                 hintText: hint,
-                hintStyle: TextStyle(color: Colors.black),
+                hintStyle: TextStyle(color: t.textMuted),
               ),
             ),
           ),

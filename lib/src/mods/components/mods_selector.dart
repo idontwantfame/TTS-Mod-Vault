@@ -7,6 +7,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
         modsProvider,
         modsSearchQueryProvider,
         multiModsProvider,
@@ -21,6 +22,7 @@ class ModsSelector extends HookConsumerWidget {
     final modsState = ref.watch(modsProvider);
     final selectedModType = ref.watch(selectedModTypeProvider);
     final showSavedObjects = ref.watch(settingsProvider).showSavedObjects;
+    final t = ref.watch(appThemeDataProvider);
 
     final modsMessage = useMemoized(() {
       return modsState.whenOrNull(
@@ -73,12 +75,12 @@ class ModsSelector extends HookConsumerWidget {
         height: 32,
         child: ToggleButtons(
           // Unselect items colors
-          color: Colors.white,
-          borderColor: Colors.white,
+          color: t.textPrimary,
+          borderColor: t.border,
           // Selected items colors
-          selectedColor: Colors.black, // Text
-          fillColor: Colors.white, // Background
-          selectedBorderColor: Colors.white,
+          selectedColor: t.accentText, // Text
+          fillColor: t.accent, // Background
+          selectedBorderColor: t.accent,
 
           isSelected: segments.map((type) => type == selectedModType).toList(),
           onPressed: (index) {

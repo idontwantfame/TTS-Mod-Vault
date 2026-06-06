@@ -4,7 +4,7 @@ import 'dart:convert' show json;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show Clipboard, ClipboardData;
-import 'package:hooks_riverpod/hooks_riverpod.dart' show WidgetRef;
+import 'package:hooks_riverpod/hooks_riverpod.dart' show ProviderScope, WidgetRef;
 import 'package:intl/intl.dart' show DateFormat;
 import 'package:mime/mime.dart' show lookupMimeType;
 import 'package:open_filex/open_filex.dart' show OpenFilex;
@@ -21,6 +21,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart'
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
         bulkActionsProvider,
         downloadProvider,
         existingBackupsProvider,
@@ -229,8 +230,8 @@ Future<void> showConfirmDialogWithCheckbox(
                     children: [
                       Checkbox(
                         value: checkboxValue,
-                        checkColor: Colors.black,
-                        activeColor: Colors.white,
+                        checkColor: ProviderScope.containerOf(context).read(appThemeDataProvider).surface,
+                        activeColor: ProviderScope.containerOf(context).read(appThemeDataProvider).accent,
                         visualDensity: VisualDensity.compact,
                         onChanged: (value) {
                           setState(() {
@@ -591,12 +592,13 @@ void showModContextMenu(
   Offset position,
   Mod mod,
 ) {
+  final t = ProviderScope.containerOf(context).read(appThemeDataProvider);
   showMenu(
     context: context,
     color: Theme.of(context).scaffoldBackgroundColor,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(8),
-      side: BorderSide(color: Colors.white, width: 2),
+      side: BorderSide(color: t.border, width: 2),
     ),
     position: RelativeRect.fromLTRB(
       position.dx,
@@ -858,6 +860,7 @@ void _showBackupSubmenu(
   Offset parentPosition,
   Mod mod,
 ) {
+  final t = ProviderScope.containerOf(context).read(appThemeDataProvider);
   // Calculate submenu position to the right of parent menu
   const double estimatedParentMenuWidth = 280.0;
   const double estimatedSubmenuWidth = 250.0;
@@ -888,7 +891,7 @@ void _showBackupSubmenu(
     color: Theme.of(context).scaffoldBackgroundColor,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(8),
-      side: BorderSide(color: Colors.white, width: 2),
+      side: BorderSide(color: t.border, width: 2),
     ),
     position: RelativeRect.fromLTRB(
       submenuPosition.dx,
@@ -988,12 +991,13 @@ void showBackupContextMenu(
   ExistingBackup backup,
   bool hasMatchingMod,
 ) {
+  final t = ProviderScope.containerOf(context).read(appThemeDataProvider);
   showMenu(
     context: context,
     color: Theme.of(context).scaffoldBackgroundColor,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(8),
-      side: BorderSide(color: Colors.white, width: 2),
+      side: BorderSide(color: t.border, width: 2),
     ),
     position: RelativeRect.fromLTRB(
       position.dx,

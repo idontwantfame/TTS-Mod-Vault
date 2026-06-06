@@ -390,7 +390,7 @@ class FilterButton extends HookConsumerWidget {
               leadingIcon: Icon(
                 Icons.check,
                 color: sortAndFilterState.filteredBackupStatuses.isNotEmpty
-                    ? Colors.black
+                    ? t.accent
                     : Colors.transparent,
               ),
               menuStyle: MenuStyle(

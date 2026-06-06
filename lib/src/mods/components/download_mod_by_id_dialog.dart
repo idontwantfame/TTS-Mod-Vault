@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as p;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show directoriesProvider, downloadProvider;
+    show appThemeDataProvider, directoriesProvider, downloadProvider;
 import 'package:tts_mod_vault/src/utils.dart' show showSnackBar;
 import 'package:tts_mod_vault/src/mods/components/download_results_dialog.dart'
     show showDownloadResultsDialog;
@@ -19,6 +19,7 @@ class DownloadModsDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final downloadState = ref.watch(downloadProvider);
+    final t = ref.watch(appThemeDataProvider);
     final progress = downloadState.progress;
     final statusMessage = downloadState.statusMessage;
 
@@ -50,8 +51,8 @@ class DownloadModsDialog extends HookConsumerWidget {
                 onChanged: isDownloading
                     ? null
                     : (v) => downloadAssets.value = v ?? true,
-                checkColor: Colors.black,
-                activeColor: Colors.white,
+                checkColor: t.surface,
+                activeColor: t.accent,
               ),
               const SizedBox(width: 4),
               const Text('Download all assets after downloading mod'),
@@ -74,7 +75,7 @@ class DownloadModsDialog extends HookConsumerWidget {
                     LinearProgressIndicator(
                       value: progress,
                       minHeight: 24,
-                      backgroundColor: Colors.grey.shade300,
+                      backgroundColor: t.border,
                       color: Colors.green,
                       borderRadius: BorderRadius.all(Radius.circular(32)),
                     ),
@@ -83,7 +84,7 @@ class DownloadModsDialog extends HookConsumerWidget {
                         '${(progress * 100).toStringAsFixed(0)}%',
                         style: TextStyle(
                           fontSize: 16,
-                          color: Colors.black,
+                          color: t.textPrimary,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

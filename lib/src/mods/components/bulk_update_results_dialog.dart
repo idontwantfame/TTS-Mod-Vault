@@ -3,6 +3,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/state/bulk_actions/mod_update_result.dart'
     show ModUpdateResult, ModUpdateStatus;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
+import 'package:tts_mod_vault/src/ui/theme/app_theme.dart' show AppThemeData;
 import 'package:tts_mod_vault/src/ui/ui.dart'
     show AppDialog, AppButton, AppButtonVariant;
 
@@ -18,6 +20,7 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     // Categorize results
     final updated =
         results.where((r) => r.status == ModUpdateStatus.updated).toList();
@@ -34,7 +37,7 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Summary counts
-          _buildSummary(updated.length, upToDate.length, failed.length),
+          _buildSummary(t, updated.length, upToDate.length, failed.length),
 
           const SizedBox(height: 16),
 
@@ -46,6 +49,7 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
                 children: [
                   if (updated.isNotEmpty)
                     _buildSection(
+                      t,
                       'Updated',
                       updated,
                       Colors.green,
@@ -53,6 +57,7 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
                     ),
                   if (upToDate.isNotEmpty)
                     _buildSection(
+                      t,
                       'Already Up to Date',
                       upToDate,
                       Colors.blue,
@@ -60,6 +65,7 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
                     ),
                   if (failed.isNotEmpty)
                     _buildSection(
+                      t,
                       'Failed',
                       failed,
                       Colors.red,
@@ -81,11 +87,11 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
     );
   }
 
-  Widget _buildSummary(int updatedCount, int upToDateCount, int failedCount) {
+  Widget _buildSummary(AppThemeData t, int updatedCount, int upToDateCount, int failedCount) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: t.surfaceElevated,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
@@ -116,6 +122,7 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
   }
 
   Widget _buildSection(
+    AppThemeData t,
     String title,
     List<ModUpdateResult> items,
     Color color,
@@ -140,12 +147,12 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
           ],
         ),
         const SizedBox(height: 8),
-        ...items.map((result) => _buildModItem(result, color)),
+        ...items.map((result) => _buildModItem(t, result, color)),
       ],
     );
   }
 
-  Widget _buildModItem(ModUpdateResult result, Color color) {
+  Widget _buildModItem(AppThemeData t, ModUpdateResult result, Color color) {
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -166,9 +173,9 @@ class BulkUpdateResultsDialog extends HookConsumerWidget {
                 if (result.errorMessage != null)
                   Text(
                     result.errorMessage!,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
-                      color: Colors.white70,
+                      color: t.textSecondary,
                       fontStyle: FontStyle.italic,
                     ),
                   ),

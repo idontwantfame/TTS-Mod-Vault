@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show Mod;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show downloadProvider, selectedModProvider;
+    show appThemeDataProvider, downloadProvider, selectedModProvider;
 import 'package:tts_mod_vault/src/utils.dart' show copyToClipboard;
 import 'package:tts_mod_vault/src/ui/ui.dart'
     show AppDialog, AppButton, AppButtonVariant;
@@ -19,6 +19,7 @@ class UrlCheckResultsDialog extends HookConsumerWidget {
     final selectedMod = ref.watch(selectedModProvider) ?? mod;
     final downloadNotifier = ref.watch(downloadProvider.notifier);
     final downloadState = ref.watch(downloadProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     final invalidUrls = useMemoized(
         () => selectedMod.invalidUrls ?? [], [selectedMod.invalidUrls]);
@@ -59,7 +60,7 @@ class UrlCheckResultsDialog extends HookConsumerWidget {
                   ),
                   LinearProgressIndicator(
                     minHeight: 24,
-                    backgroundColor: Colors.grey.shade300,
+                    backgroundColor: t.border,
                     color: Colors.green,
                     borderRadius: BorderRadius.all(Radius.circular(32)),
                     value: downloadState.progress,
@@ -78,7 +79,7 @@ class UrlCheckResultsDialog extends HookConsumerWidget {
                     style: TextStyle(
                       color: invalidUrls.isNotEmpty
                           ? Colors.red
-                          : Colors.white,
+                          : t.textPrimary,
                       fontSize: 16,
                     ),
                   ),
@@ -153,6 +154,7 @@ class _InvalidUrlRow extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     final isHovered = useState(false);
 
     return Padding(
@@ -173,7 +175,7 @@ class _InvalidUrlRow extends HookConsumerWidget {
                 style: TextStyle(
                     fontSize: 16,
                     backgroundColor: isHovered.value
-                        ? Colors.grey[850]
+                        ? t.surfaceElevated
                         : Colors.transparent),
               ),
             ),
@@ -187,7 +189,7 @@ class _InvalidUrlRow extends HookConsumerWidget {
               ),
               icon: Icon(Icons.copy,
                   size: 16,
-                  color: !isHovered.value ? Colors.transparent : Colors.white),
+                  color: !isHovered.value ? Colors.transparent : t.textPrimary),
             ),
           ],
         ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show ConsumerWidget, WidgetRef;
-import 'package:tts_mod_vault/src/state/provider.dart' show downloadProvider;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider, downloadProvider;
 
 class DownloadProgressBar extends ConsumerWidget {
   const DownloadProgressBar({super.key});
@@ -10,6 +10,7 @@ class DownloadProgressBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final downloadState = ref.watch(downloadProvider);
     final canceling = downloadState.cancelledDownloads;
+    final t = ref.watch(appThemeDataProvider);
 
     return Padding(
       padding: const EdgeInsets.only(top: 8),
@@ -56,7 +57,7 @@ class DownloadProgressBar extends ConsumerWidget {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: t.border,
                 borderRadius: BorderRadius.circular(32),
               ),
               child: Stack(

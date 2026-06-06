@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show ConsumerWidget, WidgetRef;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 import 'package:package_info_plus/package_info_plus.dart' show PackageInfo;
 import 'package:tts_mod_vault/src/changelog.dart' show showChangelogDialog;
 import 'package:tts_mod_vault/src/utils.dart'
@@ -16,19 +17,20 @@ class HelpMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return MenuAnchor(
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.white),
+        backgroundColor: WidgetStateProperty.all(t.surface),
       ),
       menuChildren: <Widget>[
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.update, color: Colors.black),
+          leadingIcon: Icon(Icons.update, color: t.textPrimary),
           child:
-              Text('Check for updates', style: TextStyle(color: Colors.black)),
+              Text('Check for updates', style: TextStyle(color: t.textPrimary)),
           onPressed: () async {
             final newTagVersion = await checkForUpdatesOnGitHub();
 
@@ -49,20 +51,20 @@ class HelpMenu extends ConsumerWidget {
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
           onPressed: () => showChangelogDialog(context),
-          leadingIcon: Icon(Icons.article, color: Colors.black),
-          child: Text('Changelog', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.article, color: t.textPrimary),
+          child: Text('Changelog', style: TextStyle(color: t.textPrimary)),
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
-          leadingIcon: Icon(Icons.help_outline, color: Colors.black),
-          child: Text('Help & Feedback', style: TextStyle(color: Colors.black)),
+          leadingIcon: Icon(Icons.help_outline, color: t.textPrimary),
+          child: Text('Help & Feedback', style: TextStyle(color: t.textPrimary)),
           onPressed: () async {
             final result = await openUrl(steamDiscussionUrl);
             if (!result && context.mounted) {

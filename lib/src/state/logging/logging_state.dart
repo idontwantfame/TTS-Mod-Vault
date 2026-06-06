@@ -26,7 +26,7 @@ class LogEntry {
   Color get color {
     switch (level) {
       case LogLevel.info:
-        return Colors.white;
+        return const Color(0xFFe2e0e8);
       case LogLevel.warning:
         return Colors.orange;
       case LogLevel.error:

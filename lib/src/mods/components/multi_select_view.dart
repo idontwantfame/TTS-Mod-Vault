@@ -11,6 +11,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
         bulkActionsProvider,
         selectedModsListProvider,
         selectedModTypeProvider;
@@ -25,6 +26,7 @@ class MultiSelectView extends HookConsumerWidget {
     final selectedMods = ref.watch(selectedModsListProvider);
     final modType = ref.watch(selectedModTypeProvider);
     final actionInProgress = ref.watch(actionInProgressProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     final scrollController = useScrollController();
 
@@ -54,7 +56,7 @@ class MultiSelectView extends HookConsumerWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: Colors.white,
+                color: t.border,
                 width: 2.0,
               ),
             ),

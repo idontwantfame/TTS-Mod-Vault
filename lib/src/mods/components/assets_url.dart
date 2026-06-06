@@ -17,6 +17,7 @@ import 'package:tts_mod_vault/src/state/enums/asset_type_enum.dart'
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
         deleteAssetsProvider,
         downloadProvider,
         modsProvider,
@@ -46,6 +47,7 @@ class AssetsUrl extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final assetUrlFontSize = ref.watch(settingsProvider).assetUrlFontSize;
+    final t = ref.watch(appThemeDataProvider);
     final mod = ref.watch(selectedModProvider);
     final url = ref.watch(selectedUrlProvider);
     final isSelected = useMemoized(
@@ -59,7 +61,7 @@ class AssetsUrl extends HookConsumerWidget {
         color: Theme.of(context).scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: Colors.white, width: 2),
+          side: BorderSide(color: t.border, width: 2),
         ),
         position: RelativeRect.fromLTRB(
           position.dx,

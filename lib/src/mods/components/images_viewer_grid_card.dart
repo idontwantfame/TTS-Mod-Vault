@@ -17,6 +17,7 @@ import 'package:tts_mod_vault/src/state/enums/asset_type_enum.dart'
     show AssetTypeEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
+        appThemeDataProvider,
         selectedModProvider,
         downloadProvider,
         deleteAssetsProvider,
@@ -38,6 +39,7 @@ class ImagesViewerGridCard extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     void showImagesViewerGridCardContextMenu(
       BuildContext context,
       WidgetRef ref,
@@ -49,7 +51,7 @@ class ImagesViewerGridCard extends HookConsumerWidget {
         color: Theme.of(context).scaffoldBackgroundColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(8),
-          side: BorderSide(color: Colors.white, width: 2),
+          side: BorderSide(color: t.border, width: 2),
         ),
         position: RelativeRect.fromLTRB(
           position.dx,
@@ -298,13 +300,13 @@ class ImagesViewerGridCard extends HookConsumerWidget {
           fit: BoxFit.contain,
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              color: Colors.black,
+              color: t.background,
               child: Center(
                   child: Text(
                 'Failed to load image',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: t.textPrimary,
                   fontSize: 24,
                 ),
               )),
@@ -329,7 +331,7 @@ class ImagesViewerGridCard extends HookConsumerWidget {
               decoration: BoxDecoration(
                 border: Border.all(
                   width: 4,
-                  color: isHovered.value ? Colors.white : Colors.transparent,
+                  color: isHovered.value ? t.borderHighlight : Colors.transparent,
                 ),
               ),
             ),

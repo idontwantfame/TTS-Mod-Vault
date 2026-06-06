@@ -8,7 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
 import 'package:path/path.dart' as p;
 import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show directoriesProvider, existingBackupsProvider, loaderProvider;
+    show appThemeDataProvider, directoriesProvider, existingBackupsProvider, loaderProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart'
     show AppButton, AppButtonVariant;
 
@@ -19,6 +19,7 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final backupsDir = ref.watch(directoriesProvider).backupsDir;
     final existingBackups = ref.watch(existingBackupsProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     final selectedIndices = useState<Set<int>>({});
     final renamingInProgress = useState(false);
@@ -122,10 +123,10 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
                                     padding:
                                         const EdgeInsets.symmetric(vertical: 2),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[850],
+                                      color: t.surfaceElevated,
                                       border: Border(
                                         bottom: BorderSide(
-                                          color: Colors.white,
+                                          color: t.border,
                                           width: 1,
                                         ),
                                       ),
@@ -165,8 +166,8 @@ class RenameOldBackupsDialog extends HookConsumerWidget {
                                               const EdgeInsets.only(right: 8),
                                           child: Checkbox(
                                             value: isSelected,
-                                            checkColor: Colors.black,
-                                            activeColor: Colors.white,
+                                            checkColor: t.surface,
+                                            activeColor: t.accent,
                                             onChanged: (value) {
                                               final newSet = Set<int>.from(
                                                   selectedIndices.value);

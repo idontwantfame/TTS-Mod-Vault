@@ -4,6 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
     show PostBackupDeletionEnum;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart'
     show AppDialog, AppButton, AppButtonVariant;
 
@@ -19,6 +20,7 @@ class BulkDeleteDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     final selectedDeletion =
         useState(PostBackupDeletionEnum.deleteNonSharedAssets);
 
@@ -45,11 +47,11 @@ class BulkDeleteDialog extends HookConsumerWidget {
                 ),
                 DropdownButton<PostBackupDeletionEnum>(
                   value: selectedDeletion.value,
-                  dropdownColor: Colors.white,
-                  style: TextStyle(color: Colors.white),
+                  dropdownColor: t.surface,
+                  style: TextStyle(color: t.textPrimary),
                   underline: Container(
                     height: 2,
-                    color: Colors.white,
+                    color: t.border,
                   ),
                   focusColor: Colors.transparent,
                   selectedItemBuilder: (BuildContext context) {
@@ -58,7 +60,7 @@ class BulkDeleteDialog extends HookConsumerWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           item.label,
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: t.textPrimary),
                         ),
                       );
                     }).toList();
@@ -68,7 +70,7 @@ class BulkDeleteDialog extends HookConsumerWidget {
                       value: deletion,
                       child: Text(
                         deletion.label,
-                        style: const TextStyle(color: Colors.black),
+                        style: TextStyle(color: t.textPrimary),
                       ),
                     );
                   }).toList(),

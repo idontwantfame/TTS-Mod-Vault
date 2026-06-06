@@ -4,13 +4,14 @@ import 'package:flutter/material.dart'
         BorderRadius,
         BoxDecoration,
         BuildContext,
-        Colors,
         InlineSpan,
         StatelessWidget,
         TextStyle,
         Theme,
         Tooltip,
         Widget;
+import 'package:hooks_riverpod/hooks_riverpod.dart' show ProviderScope;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 
 class CustomTooltip extends StatelessWidget {
   final String? message;
@@ -30,11 +31,12 @@ class CustomTooltip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = ProviderScope.containerOf(context).read(appThemeDataProvider);
     return Tooltip(
       waitDuration: waitDuration,
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        border: Border.all(color: Colors.white, width: 2),
+        border: Border.all(color: t.border, width: 2),
         borderRadius: BorderRadius.circular(8),
       ),
       textStyle: richMessage == null

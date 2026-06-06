@@ -9,7 +9,7 @@ import 'package:tts_mod_vault/src/state/enums/asset_type_enum.dart'
     show AssetTypeEnum;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show Mod;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show modsProvider, selectedModTypeProvider;
+    show appThemeDataProvider, modsProvider, selectedModTypeProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart'
     show AppDialog, AppButton, AppTextField, AppButtonVariant;
 
@@ -48,6 +48,7 @@ class ReplaceUrlDialog extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     final textFieldController = useTextEditingController();
     final renameFileBox = useState(asset.fileExists);
     final replacingUrl = useState(false);
@@ -70,15 +71,15 @@ class ReplaceUrlDialog extends HookConsumerWidget {
                 width: double.infinity,
                 padding: EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.white),
+                  border: Border.all(color: t.border),
                   borderRadius: BorderRadius.circular(4),
-                  color: Colors.white,
+                  color: t.surfaceElevated,
                 ),
                 child: SelectableText(
                   asset.url,
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.black,
+                    color: t.textPrimary,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -103,8 +104,8 @@ class ReplaceUrlDialog extends HookConsumerWidget {
                   children: [
                     Checkbox(
                       value: renameFileBox.value,
-                      checkColor: Colors.black,
-                      activeColor: Colors.white,
+                      checkColor: t.surface,
+                      activeColor: t.accent,
                       visualDensity: VisualDensity.compact,
                       onChanged: (value) {
                         renameFileBox.value = value ?? false;
@@ -167,7 +168,7 @@ class ReplaceUrlDialog extends HookConsumerWidget {
             child: Container(
               color: Colors.black54,
               child: Center(
-                child: CircularProgressIndicator(color: Colors.white),
+                child: CircularProgressIndicator(color: t.accent),
               ),
             ),
           ),

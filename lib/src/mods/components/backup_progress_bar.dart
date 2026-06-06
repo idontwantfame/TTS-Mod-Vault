@@ -5,7 +5,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
 import 'package:tts_mod_vault/src/state/backup/backup_state.dart'
     show BackupStatusEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show backupProvider, selectedModProvider;
+    show appThemeDataProvider, backupProvider, selectedModProvider;
 
 class BackupProgressBar extends HookConsumerWidget {
   const BackupProgressBar({super.key});
@@ -14,6 +14,7 @@ class BackupProgressBar extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedMod = ref.watch(selectedModProvider);
     final backup = ref.watch(backupProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     final progress = useMemoized(() {
       return (backup.totalCount > 0)
@@ -75,7 +76,7 @@ class BackupProgressBar extends HookConsumerWidget {
             child: Container(
               width: double.infinity,
               decoration: BoxDecoration(
-                color: Colors.grey.shade300,
+                color: t.border,
                 borderRadius: BorderRadius.circular(32),
               ),
               child: Stack(

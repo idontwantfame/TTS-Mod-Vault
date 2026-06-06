@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart' show ConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/models/log_entry.dart';
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 
-class LogLineItem extends StatelessWidget {
+class LogLineItem extends ConsumerWidget {
   final LogEntry entry;
 
   const LogLineItem({
@@ -26,7 +28,8 @@ class LogLineItem extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
       child: Row(
@@ -39,7 +42,7 @@ class LogLineItem extends StatelessWidget {
               entry.formattedTimestamp,
               style: TextStyle(
                 fontSize: 11.7,
-                color: Colors.grey.shade400,
+                color: t.textMuted,
                 fontFamily: 'monospace',
               ),
             ),
@@ -64,7 +67,7 @@ class LogLineItem extends StatelessWidget {
               child: Icon(
                 Icons.content_copy,
                 size: 16,
-                color: Colors.grey.shade500,
+                color: t.textMuted,
               ),
             ),
           ),

@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:tts_mod_vault/src/mods/components/log_line_item.dart';
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show filteredLogProvider, logProvider;
+    show appThemeDataProvider, filteredLogProvider, logProvider;
 
 class LogPanel extends HookConsumerWidget {
   final double height;
@@ -15,6 +15,7 @@ class LogPanel extends HookConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     final isExpanded = useState(false);
     final searchQuery = useState('');
     final scrollController = useScrollController();
@@ -61,12 +62,12 @@ class LogPanel extends HookConsumerWidget {
                   children: [
                     // Title
                     if (isExpanded.value)
-                      const Text(
+                      Text(
                         'Logs',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
-                          color: Colors.white,
+                          color: t.textPrimary,
                         ),
                       ),
                     if (isExpanded.value) const SizedBox(width: 16),
@@ -77,18 +78,18 @@ class LogPanel extends HookConsumerWidget {
                         height: 32,
                         child: TextField(
                           onChanged: (value) => searchQuery.value = value,
-                          style: const TextStyle(
-                              fontSize: 14, color: Colors.white),
+                          style: TextStyle(
+                              fontSize: 14, color: t.textPrimary),
                           decoration: InputDecoration(
                             hintText: 'Filter logs...',
                             hintStyle: TextStyle(
                               fontSize: 14,
-                              color: Colors.white.withValues(alpha: 0.6),
+                              color: t.textMuted,
                             ),
-                            prefixIcon: const Icon(Icons.search,
-                                size: 18, color: Colors.white),
+                            prefixIcon: Icon(Icons.search,
+                                size: 18, color: t.textMuted),
                             filled: true,
-                            fillColor: Colors.black87,
+                            fillColor: t.surface,
                             contentPadding:
                                 const EdgeInsets.symmetric(vertical: 4),
                             border: OutlineInputBorder(
@@ -101,8 +102,8 @@ class LogPanel extends HookConsumerWidget {
                             ),
                             focusedBorder: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(4),
-                              borderSide: const BorderSide(
-                                  color: Colors.white, width: 1),
+                              borderSide: BorderSide(
+                                  color: t.accent, width: 1),
                             ),
                           ),
                         ),
@@ -151,7 +152,7 @@ class LogPanel extends HookConsumerWidget {
                       isExpanded.value
                           ? Icons.keyboard_arrow_down
                           : Icons.keyboard_arrow_up,
-                      color: Colors.white,
+                      color: t.textPrimary,
                       size: 16,
                     ),
                   ],
@@ -170,7 +171,7 @@ class LogPanel extends HookConsumerWidget {
                             : 'No logs match your filter',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey.shade600,
+                          color: t.border,
                         ),
                       ),
                     )

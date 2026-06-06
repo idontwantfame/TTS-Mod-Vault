@@ -7,7 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show selectedModTypeProvider, settingsProvider;
+    show appThemeDataProvider, selectedModTypeProvider, settingsProvider;
 import 'package:tts_mod_vault/src/utils.dart'
     show copyToClipboard, updateUrlsHelp, updateUrlsInstruction;
 
@@ -45,6 +45,7 @@ class UpdateUrlsDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final presets = ref.watch(settingsProvider).urlReplacementPresets;
+    final t = ref.watch(appThemeDataProvider);
 
     final oldPrefixTextFieldController = useTextEditingController();
     final newPrefixTextFieldController = useTextEditingController();
@@ -104,15 +105,15 @@ class UpdateUrlsDialog extends HookConsumerWidget {
                   if (showExample.value)
                     Container(
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: t.surfaceElevated,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       padding: const EdgeInsets.all(8),
                       child: SelectableText(
                         updateUrlsInstruction,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 16,
-                          color: Colors.black,
+                          color: t.textPrimary,
                         ),
                       ),
                     ),
@@ -124,7 +125,7 @@ class UpdateUrlsDialog extends HookConsumerWidget {
                       children: presets.map((preset) {
                         return OutlinedButton(
                           style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: Colors.white),
+                            side: BorderSide(color: t.border),
                           ),
                           onPressed: () {
                             oldPrefixTextFieldController.text = preset.oldUrl;
@@ -144,11 +145,11 @@ class UpdateUrlsDialog extends HookConsumerWidget {
                   TextField(
                     autofocus: true,
                     controller: oldPrefixTextFieldController,
-                    cursorColor: Colors.black,
-                    style: TextStyle(fontSize: 16, color: Colors.black),
+                    cursorColor: t.accent,
+                    style: TextStyle(fontSize: 16, color: t.textPrimary),
                     scrollPadding: EdgeInsets.all(0),
                     decoration: InputDecoration(
-                      fillColor: Colors.white,
+                      fillColor: t.surfaceElevated,
                       border: OutlineInputBorder(),
                       hintText: 'Enter new URL',
                     ),
@@ -165,11 +166,11 @@ class UpdateUrlsDialog extends HookConsumerWidget {
                   TextField(
                     autofocus: true,
                     controller: newPrefixTextFieldController,
-                    cursorColor: Colors.black,
-                    style: TextStyle(fontSize: 16, color: Colors.black),
+                    cursorColor: t.accent,
+                    style: TextStyle(fontSize: 16, color: t.textPrimary),
                     scrollPadding: EdgeInsets.all(0),
                     decoration: InputDecoration(
-                      fillColor: Colors.white,
+                      fillColor: t.surfaceElevated,
                       border: OutlineInputBorder(),
                       hintText: 'Enter new URL',
                     ),
@@ -180,8 +181,8 @@ class UpdateUrlsDialog extends HookConsumerWidget {
                     children: [
                       Checkbox(
                         value: renameFileBox.value,
-                        checkColor: Colors.black,
-                        activeColor: Colors.white,
+                        checkColor: t.surface,
+                        activeColor: t.accent,
                         visualDensity: VisualDensity.compact,
                         onChanged: (value) {
                           renameFileBox.value = value ?? false;

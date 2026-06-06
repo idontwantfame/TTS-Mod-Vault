@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart' show DebugPrintCallback;
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart' show ProviderScope;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 
 class DebugConsole extends StatefulWidget {
   final double height;
@@ -54,8 +56,9 @@ class _DebugConsoleState extends State<DebugConsole> {
 
   @override
   Widget build(BuildContext context) {
+    final t = ProviderScope.containerOf(context).read(appThemeDataProvider);
     return Container(
-      color: Colors.white,
+      color: t.surfaceElevated,
       height: widget.height,
       width: MediaQuery.of(context).size.width * 0.31,
       child: SingleChildScrollView(
@@ -63,10 +66,10 @@ class _DebugConsoleState extends State<DebugConsole> {
         padding: const EdgeInsets.all(4),
         child: SelectableText(
           _logs.join('\n'),
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Colors.black,
+            color: t.textPrimary,
           ),
         ),
       ),

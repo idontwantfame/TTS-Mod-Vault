@@ -6,6 +6,7 @@ import 'package:tts_mod_vault/src/mods/components/components.dart'
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
         cleanupProvider,
         loaderProvider,
         settingsProvider;
@@ -19,16 +20,17 @@ class ToolsMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final actionInProgress = ref.watch(actionInProgressProvider);
     final cleanupNotifier = ref.watch(cleanupProvider.notifier);
+    final t = ref.watch(appThemeDataProvider);
 
     return MenuAnchor(
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.white),
+        backgroundColor: WidgetStateProperty.all(t.surface),
       ),
       menuChildren: <Widget>[
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
           onPressed: () async {
             await cleanupNotifier.startCleanup(
@@ -54,16 +56,16 @@ class ToolsMenu extends ConsumerWidget {
               },
             );
           },
-          leadingIcon: Icon(Icons.delete_sweep, color: Colors.black),
+          leadingIcon: Icon(Icons.delete_sweep, color: t.textPrimary),
           child: Text(
             'Clean up unused files',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: t.textPrimary),
           ),
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
           onPressed: () {
             showConfirmDialog(
@@ -72,31 +74,31 @@ class ToolsMenu extends ConsumerWidget {
               () async => await ref.read(loaderProvider).refreshAppData(true),
             );
           },
-          leadingIcon: const Icon(
+          leadingIcon: Icon(
             Icons.refresh,
-            color: Colors.black,
+            color: t.textPrimary,
           ),
-          child: const Text(
+          child: Text(
             'Clear Vault cache',
-            style: TextStyle(color: Colors.black),
+            style: TextStyle(color: t.textPrimary),
           ),
         ),
         MenuItemButton(
           style: MenuItemButton.styleFrom(
-            backgroundColor: Colors.white,
-            foregroundColor: Colors.black,
+            backgroundColor: t.surface,
+            foregroundColor: t.textPrimary,
           ),
           onPressed: () => showDialog(
             context: context,
             builder: (context) => DownloadModsDialog(),
           ),
-          leadingIcon: const Icon(
+          leadingIcon: Icon(
             Icons.download,
-            color: Colors.black,
+            color: t.textPrimary,
           ),
-          child: const Text('Download Workshop Mods',
+          child: Text('Download Workshop Mods',
               style: TextStyle(
-                color: Colors.black,
+                color: t.textPrimary,
               )),
         ),
       ],

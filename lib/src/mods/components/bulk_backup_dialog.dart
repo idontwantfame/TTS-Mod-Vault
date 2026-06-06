@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
 import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
     show BulkBackupBehaviorEnum, PostBackupDeletionEnum;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show directoriesProvider, settingsProvider;
+    show appThemeDataProvider, directoriesProvider, settingsProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart'
     show AppDialog, AppButton, AppButtonVariant;
 
@@ -30,6 +30,7 @@ class BulkBackupDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final backupsDir = ref.watch(directoriesProvider).backupsDir;
     final showBackupState = ref.watch(settingsProvider).showBackupState;
+    final t = ref.watch(appThemeDataProvider);
     final selectedBehavior = useState(initialBehavior);
     final selectedFolder = useState(ref.read(directoriesProvider).backupsDir);
     final selectedPostBackupDeletion = useState(PostBackupDeletionEnum.none);
@@ -54,11 +55,11 @@ class BulkBackupDialog extends HookConsumerWidget {
                 ),
                 DropdownButton<BulkBackupBehaviorEnum>(
                   value: selectedBehavior.value,
-                  dropdownColor: Colors.white,
-                  style: TextStyle(color: Colors.white),
+                  dropdownColor: t.surface,
+                  style: TextStyle(color: t.textPrimary),
                   underline: Container(
                     height: 2,
-                    color: Colors.white,
+                    color: t.border,
                   ),
                   focusColor: Colors.transparent,
                   selectedItemBuilder: (BuildContext context) {
@@ -67,7 +68,7 @@ class BulkBackupDialog extends HookConsumerWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           item.label,
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: t.textPrimary),
                         ),
                       );
                     }).toList();
@@ -77,7 +78,7 @@ class BulkBackupDialog extends HookConsumerWidget {
                       value: behavior,
                       child: Text(
                         behavior.label,
-                        style: const TextStyle(color: Colors.black),
+                        style: TextStyle(color: t.textPrimary),
                       ),
                     );
                   }).toList(),
@@ -97,11 +98,11 @@ class BulkBackupDialog extends HookConsumerWidget {
                 ),
                 DropdownButton<PostBackupDeletionEnum>(
                   value: selectedPostBackupDeletion.value,
-                  dropdownColor: Colors.white,
-                  style: TextStyle(color: Colors.white),
+                  dropdownColor: t.surface,
+                  style: TextStyle(color: t.textPrimary),
                   underline: Container(
                     height: 2,
-                    color: Colors.white,
+                    color: t.border,
                   ),
                   focusColor: Colors.transparent,
                   selectedItemBuilder: (BuildContext context) {
@@ -110,7 +111,7 @@ class BulkBackupDialog extends HookConsumerWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           item.label,
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: t.textPrimary),
                         ),
                       );
                     }).toList();
@@ -120,7 +121,7 @@ class BulkBackupDialog extends HookConsumerWidget {
                       value: deletion,
                       child: Text(
                         deletion.label,
-                        style: const TextStyle(color: Colors.black),
+                        style: TextStyle(color: t.textPrimary),
                       ),
                     );
                   }).toList(),

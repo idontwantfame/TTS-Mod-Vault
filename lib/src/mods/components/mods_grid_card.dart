@@ -16,6 +16,7 @@ import 'package:tts_mod_vault/src/state/mods/mod_model.dart'
 import 'package:tts_mod_vault/src/state/provider.dart'
     show
         actionInProgressProvider,
+        appThemeDataProvider,
         detailPanelExpandedProvider,
         modsProvider,
         multiModsProvider,
@@ -33,6 +34,7 @@ class ModsGridCard extends HookConsumerWidget {
     final showTitleOnCards = ref.watch(settingsProvider).showTitleOnCards;
     final showBackupState = ref.watch(settingsProvider).showBackupState;
     final multiSelectMods = ref.watch(multiModsProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     final isHovered = useState(false);
 
@@ -60,7 +62,7 @@ class ModsGridCard extends HookConsumerWidget {
         ExistingBackupStatusEnum.upToDate => Colors.green,
         ExistingBackupStatusEnum.outOfDate => Colors.red,
         ExistingBackupStatusEnum.assetCountMismatch => Colors.yellow,
-        ExistingBackupStatusEnum.noBackup => Colors.black,
+        ExistingBackupStatusEnum.noBackup => t.textMuted,
       },
       [mod.backupStatus],
     );
@@ -132,7 +134,7 @@ class ModsGridCard extends HookConsumerWidget {
                 ),
               if (!imageExists && !showTitleOnCards)
                 Container(
-                  color: Colors.grey[850],
+                  color: t.surfaceElevated,
                   alignment: Alignment.center,
                   child: Text(
                     mod.saveName.isNotEmpty ? mod.saveName : mod.jsonFileName,
@@ -146,7 +148,7 @@ class ModsGridCard extends HookConsumerWidget {
                 ),
               if (!imageExists && showTitleOnCards)
                 Container(
-                  color: Colors.grey[850],
+                  color: t.surfaceElevated,
                   alignment: Alignment.center,
                   child: Icon(Icons.extension_sharp, size: 48),
                 ),

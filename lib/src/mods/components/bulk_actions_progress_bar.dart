@@ -4,7 +4,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
     show BulkActionsStatusEnum;
-import 'package:tts_mod_vault/src/state/provider.dart' show bulkActionsProvider;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider, bulkActionsProvider;
 
 class BulkActionsProgressBar extends HookConsumerWidget {
   const BulkActionsProgressBar({super.key});
@@ -12,6 +12,7 @@ class BulkActionsProgressBar extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bulkActionsState = ref.watch(bulkActionsProvider);
+    final t = ref.watch(appThemeDataProvider);
 
     final progress = useMemoized(() {
       return (bulkActionsState.totalModNumber > 0)
@@ -58,7 +59,7 @@ class BulkActionsProgressBar extends HookConsumerWidget {
           Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.grey.shade300,
+              color: t.border,
               borderRadius: BorderRadius.circular(32),
             ),
             child: Stack(

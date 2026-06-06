@@ -10,7 +10,7 @@ import 'package:tts_mod_vault/src/state/bulk_actions/bulk_actions_state.dart'
     show PostBackupDeletionEnum;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show Mod;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show directoriesProvider, settingsProvider;
+    show appThemeDataProvider, directoriesProvider, settingsProvider;
 import 'package:tts_mod_vault/src/ui/ui.dart'
     show AppDialog, AppButton, AppButtonVariant;
 
@@ -34,6 +34,7 @@ class SingleModBackupDialog extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final backupsDir = ref.watch(directoriesProvider).backupsDir;
     final showBackupState = ref.watch(settingsProvider).showBackupState;
+    final t = ref.watch(appThemeDataProvider);
 
     final hasExistingBackup =
         mod.backupStatus != ExistingBackupStatusEnum.noBackup;
@@ -84,11 +85,11 @@ class SingleModBackupDialog extends HookConsumerWidget {
                   ),
                   DropdownButton<BackupLocationChoice>(
                     value: locationChoice.value,
-                    dropdownColor: Colors.white,
-                    style: TextStyle(color: Colors.white),
+                    dropdownColor: t.surface,
+                    style: TextStyle(color: t.textPrimary),
                     underline: Container(
                       height: 2,
-                      color: Colors.white,
+                      color: t.border,
                     ),
                     focusColor: Colors.transparent,
                     selectedItemBuilder: (BuildContext context) {
@@ -97,14 +98,14 @@ class SingleModBackupDialog extends HookConsumerWidget {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             'Replace existing',
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: t.textPrimary),
                           ),
                         ),
                         Container(
                           alignment: Alignment.centerLeft,
                           child: Text(
                             'Select new folder',
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(color: t.textPrimary),
                           ),
                         ),
                       ];
@@ -114,14 +115,14 @@ class SingleModBackupDialog extends HookConsumerWidget {
                         value: BackupLocationChoice.replace,
                         child: Text(
                           'Replace existing',
-                          style: const TextStyle(color: Colors.black),
+                          style: TextStyle(color: t.textPrimary),
                         ),
                       ),
                       DropdownMenuItem<BackupLocationChoice>(
                         value: BackupLocationChoice.selectNew,
                         child: Text(
                           'Select new folder',
-                          style: const TextStyle(color: Colors.black),
+                          style: TextStyle(color: t.textPrimary),
                         ),
                       ),
                     ],
@@ -144,13 +145,13 @@ class SingleModBackupDialog extends HookConsumerWidget {
                     onChanged: (value) {
                       downloadMissingFirst.value = value ?? false;
                     },
-                    checkColor: Colors.black,
-                    activeColor: Colors.white,
+                    checkColor: t.surface,
+                    activeColor: t.accent,
                   ),
                   Text(
                     'Download missing assets first',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: t.textPrimary,
                     ),
                   ),
                 ],
@@ -164,11 +165,11 @@ class SingleModBackupDialog extends HookConsumerWidget {
                 ),
                 DropdownButton<PostBackupDeletionEnum>(
                   value: selectedPostBackupDeletion.value,
-                  dropdownColor: Colors.white,
-                  style: TextStyle(color: Colors.white),
+                  dropdownColor: t.surface,
+                  style: TextStyle(color: t.textPrimary),
                   underline: Container(
                     height: 2,
-                    color: Colors.white,
+                    color: t.border,
                   ),
                   focusColor: Colors.transparent,
                   selectedItemBuilder: (BuildContext context) {
@@ -177,7 +178,7 @@ class SingleModBackupDialog extends HookConsumerWidget {
                         alignment: Alignment.centerLeft,
                         child: Text(
                           item.label,
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: t.textPrimary),
                         ),
                       );
                     }).toList();
@@ -187,7 +188,7 @@ class SingleModBackupDialog extends HookConsumerWidget {
                       value: deletion,
                       child: Text(
                         deletion.label,
-                        style: const TextStyle(color: Colors.black),
+                        style: TextStyle(color: t.textPrimary),
                       ),
                     );
                   }).toList(),

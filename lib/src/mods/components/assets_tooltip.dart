@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart' show ConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/mods/components/components.dart'
     show CustomTooltip;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 
-class HelpTooltip extends StatelessWidget {
+class HelpTooltip extends ConsumerWidget {
   const HelpTooltip({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final t = ref.watch(appThemeDataProvider);
     return CustomTooltip(
       richMessage: TextSpan(
         style: TextStyle(
           fontSize: 16,
-          color: Colors.white,
+          color: t.textPrimary,
           height: 1.6,
         ),
         children: [

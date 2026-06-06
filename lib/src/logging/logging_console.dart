@@ -55,7 +55,7 @@ class LoggingConsole extends HookConsumerWidget {
           height: logHeight,
           decoration: BoxDecoration(
             color: Colors.black.withValues(alpha: 0.9),
-            border: Border.all(color: Colors.grey.shade600),
+            border: Border.all(color: t.border),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
           ),
           child: Column(
@@ -64,18 +64,18 @@ class LoggingConsole extends HookConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade800,
+                  color: t.surface,
                   borderRadius:
                       const BorderRadius.vertical(top: Radius.circular(8)),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.terminal, color: Colors.white, size: 16),
+                    Icon(Icons.terminal, color: t.textPrimary, size: 16),
                     const SizedBox(width: 8),
-                    const Text(
+                    Text(
                       'Activity Log',
                       style: TextStyle(
-                          color: Colors.white,
+                          color: t.textPrimary,
                           fontWeight: FontWeight.bold,
                           fontSize: 14),
                     ),
@@ -109,7 +109,7 @@ class LoggingConsole extends HookConsumerWidget {
                             child: Text(
                               _levelText(level),
                               style: TextStyle(
-                                color: active ? Colors.black : Colors.white,
+                                color: active ? t.surface : t.textPrimary,
                                 fontSize: 9,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -151,7 +151,7 @@ class LoggingConsole extends HookConsumerWidget {
                     }),
                     IconButton(
                       icon:
-                          const Icon(Icons.copy, color: Colors.white, size: 16),
+                          Icon(Icons.copy, color: t.textPrimary, size: 16),
                       onPressed: () {
                         final text =
                             entries.map((e) => e.fullLogLine).join('\n');
@@ -163,8 +163,8 @@ class LoggingConsole extends HookConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.delete_sweep,
-                          color: Colors.white, size: 16),
+                      icon: Icon(Icons.delete_sweep,
+                          color: t.textPrimary, size: 16),
                       onPressed: () => ref.read(logProvider.notifier).clear(),
                       tooltip: 'Clear log',
                       padding: EdgeInsets.zero,
@@ -172,8 +172,8 @@ class LoggingConsole extends HookConsumerWidget {
                     ),
                     const SizedBox(width: 8),
                     IconButton(
-                      icon: const Icon(Icons.close,
-                          color: Colors.white, size: 16),
+                      icon: Icon(Icons.close,
+                          color: t.textPrimary, size: 16),
                       onPressed: loggingNotifier.toggleVisibility,
                       tooltip: 'Close',
                       padding: EdgeInsets.zero,
@@ -186,16 +186,16 @@ class LoggingConsole extends HookConsumerWidget {
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                color: Colors.grey.shade900,
+                color: t.surface,
                 child: TextField(
                   controller: filterController,
                   style:
-                      const TextStyle(color: Colors.white, fontSize: 12),
-                  decoration: const InputDecoration(
+                      TextStyle(color: t.textPrimary, fontSize: 12),
+                  decoration: InputDecoration(
                     hintText: 'Filter logs…',
-                    hintStyle: TextStyle(color: Colors.grey),
+                    hintStyle: TextStyle(color: t.textMuted),
                     prefixIcon:
-                        Icon(Icons.search, color: Colors.grey, size: 16),
+                        Icon(Icons.search, color: t.textMuted, size: 16),
                     border: InputBorder.none,
                     contentPadding:
                         EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -218,8 +218,8 @@ class LoggingConsole extends HookConsumerWidget {
                         children: [
                           Text(
                             entry.formattedTimestamp,
-                            style: const TextStyle(
-                                color: Colors.grey,
+                            style: TextStyle(
+                                color: t.textMuted,
                                 fontSize: 10,
                                 fontFamily: 'monospace'),
                           ),
@@ -233,8 +233,8 @@ class LoggingConsole extends HookConsumerWidget {
                             ),
                             child: Text(
                               _levelText(entry.level),
-                              style: const TextStyle(
-                                  color: Colors.black,
+                              style: TextStyle(
+                                  color: t.surface,
                                   fontSize: 9,
                                   fontWeight: FontWeight.bold),
                             ),
@@ -258,13 +258,13 @@ class LoggingConsole extends HookConsumerWidget {
               // Status bar
               Container(
                 padding: const EdgeInsets.all(4),
-                color: Colors.grey.shade800,
+                color: t.surface,
                 child: Row(
                   children: [
                     Text(
                       '${filtered.length} / ${entries.length} entries',
-                      style: const TextStyle(
-                          color: Colors.grey, fontSize: 10),
+                      style: TextStyle(
+                          color: t.textMuted, fontSize: 10),
                     ),
                   ],
                 ),

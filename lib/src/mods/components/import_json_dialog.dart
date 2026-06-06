@@ -6,7 +6,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as path;
 import 'package:tts_mod_vault/src/state/mods/mod_model.dart' show ModTypeEnum;
-import 'package:tts_mod_vault/src/state/provider.dart' show directoriesProvider;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider, directoriesProvider;
 import 'package:tts_mod_vault/src/utils.dart' show showSnackBar;
 import 'package:tts_mod_vault/src/ui/ui.dart'
     show AppDialog, AppButton, AppButtonVariant;
@@ -27,6 +27,7 @@ class ImportJsonDialog extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final workshopDir = ref.watch(directoriesProvider).workshopDir;
+    final t = ref.watch(appThemeDataProvider);
     final savesDir = ref.watch(directoriesProvider).savesDir;
     final savedObjectsDir = ref.watch(directoriesProvider).savedObjectsDir;
 
@@ -123,11 +124,11 @@ class ImportJsonDialog extends HookConsumerWidget {
                   ),
                   DropdownButton<ModTypeEnum>(
                     value: modType.value,
-                    dropdownColor: Colors.white,
-                    style: const TextStyle(color: Colors.white),
+                    dropdownColor: t.surface,
+                    style: TextStyle(color: t.textPrimary),
                     underline: Container(
                       height: 2,
-                      color: Colors.white,
+                      color: t.border,
                     ),
                     focusColor: Colors.transparent,
                     selectedItemBuilder: (BuildContext context) {
@@ -136,7 +137,7 @@ class ImportJsonDialog extends HookConsumerWidget {
                           alignment: Alignment.centerLeft,
                           child: Text(
                             item.label.toUpperCase(),
-                            style: const TextStyle(color: Colors.white),
+                            style: TextStyle(color: t.textPrimary),
                           ),
                         );
                       }).toList();
@@ -146,7 +147,7 @@ class ImportJsonDialog extends HookConsumerWidget {
                         value: type,
                         child: Text(
                           type.label.toUpperCase(),
-                          style: const TextStyle(color: Colors.black),
+                          style: TextStyle(color: t.textPrimary),
                         ),
                       );
                     }).toList(),
