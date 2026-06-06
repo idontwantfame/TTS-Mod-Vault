@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
 import 'package:path/path.dart' as p;
 
 import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 import 'package:tts_mod_vault/src/state/backup/models/existing_backup_model.dart'
     show ExistingBackup;
 import 'package:tts_mod_vault/src/utils.dart'
@@ -44,6 +45,7 @@ class BackupsListItem extends HookConsumerWidget {
     }, [backup]);
 
     final isHovered = useState(false);
+    final t = ref.watch(appThemeDataProvider);
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -68,7 +70,7 @@ class BackupsListItem extends HookConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
             side: BorderSide(
-              color: isHovered.value ? Colors.white : Colors.transparent,
+              color: isHovered.value ? t.borderHighlight : Colors.transparent,
               width: 2,
             ),
           ),

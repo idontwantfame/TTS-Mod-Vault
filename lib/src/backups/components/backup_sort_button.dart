@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show actionInProgressProvider, backupSortAndFilterProvider;
+    show actionInProgressProvider, appThemeDataProvider, backupSortAndFilterProvider;
 import 'package:tts_mod_vault/src/state/sort_and_filter/backup_sort_and_filter_state.dart'
     show BackupSortOptionEnum;
 
@@ -15,10 +15,11 @@ class BackupSortButton extends HookConsumerWidget {
     final backupSortAndFilterState = ref.watch(backupSortAndFilterProvider);
     final backupSortAndFilterNotifier =
         ref.read(backupSortAndFilterProvider.notifier);
+    final t = ref.watch(appThemeDataProvider);
 
     return MenuAnchor(
       style: MenuStyle(
-        backgroundColor: WidgetStateProperty.all(Colors.white),
+        backgroundColor: WidgetStateProperty.all(t.surface),
       ),
       builder: (context, controller, child) {
         return ElevatedButton.icon(
@@ -32,8 +33,8 @@ class BackupSortButton extends HookConsumerWidget {
             }
           },
           style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.all(Colors.white),
-            foregroundColor: WidgetStateProperty.all(Colors.black),
+            backgroundColor: WidgetStateProperty.all(t.surfaceElevated),
+            foregroundColor: WidgetStateProperty.all(t.textPrimary),
           ),
           icon: const Icon(
             Icons.sort,

@@ -3,7 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart' show useMemoized;
 import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:tts_mod_vault/src/state/provider.dart'
-    show actionInProgressProvider, backupSortAndFilterProvider;
+    show actionInProgressProvider, appThemeDataProvider, backupSortAndFilterProvider;
 import 'package:tts_mod_vault/src/state/sort_and_filter/backup_sort_and_filter_state.dart'
     show BackupMatchStatusEnum;
 
@@ -16,6 +16,7 @@ class BackupFilterButton extends HookConsumerWidget {
     final backupSortAndFilterState = ref.watch(backupSortAndFilterProvider);
     final backupSortAndFilterNotifier =
         ref.read(backupSortAndFilterProvider.notifier);
+    final t = ref.watch(appThemeDataProvider);
 
     final folders = useMemoized(() {
       return backupSortAndFilterState.backupFolders;
@@ -41,7 +42,7 @@ class BackupFilterButton extends HookConsumerWidget {
       height: 32,
       child: MenuAnchor(
         style: MenuStyle(
-          backgroundColor: WidgetStateProperty.all(Colors.white),
+          backgroundColor: WidgetStateProperty.all(t.surface),
         ),
         builder: (context, controller, child) {
           return ElevatedButton.icon(
@@ -56,8 +57,8 @@ class BackupFilterButton extends HookConsumerWidget {
               }
             },
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.white),
-              foregroundColor: WidgetStateProperty.all(Colors.black),
+              backgroundColor: WidgetStateProperty.all(t.surface),
+              foregroundColor: WidgetStateProperty.all(t.textPrimary),
             ),
             icon: const Icon(Icons.filter_list, size: 20),
           );
@@ -66,9 +67,9 @@ class BackupFilterButton extends HookConsumerWidget {
           MenuItemButton(
             closeOnActivate: true,
             style: MenuItemButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.black,
-              iconColor: Colors.black,
+              backgroundColor: t.surface,
+              foregroundColor: t.textPrimary,
+              iconColor: t.textSecondary,
             ),
             onPressed: () {
               backupSortAndFilterNotifier.clearFilteredFolders();
@@ -87,7 +88,7 @@ class BackupFilterButton extends HookConsumerWidget {
               ],
             ),
           ),
-          const Divider(height: 1, color: Colors.black),
+          Divider(height: 1, color: t.border),
           if (folders.isNotEmpty)
             SubmenuButton(
               leadingIcon: Icon(
@@ -97,12 +98,12 @@ class BackupFilterButton extends HookConsumerWidget {
                     : Colors.transparent,
               ),
               style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.white),
-                foregroundColor: WidgetStateProperty.all(Colors.black),
-                iconColor: WidgetStateProperty.all(Colors.black),
+                backgroundColor: WidgetStateProperty.all(t.surface),
+                foregroundColor: WidgetStateProperty.all(t.textPrimary),
+                iconColor: WidgetStateProperty.all(t.textPrimary),
               ),
               menuStyle: MenuStyle(
-                backgroundColor: WidgetStateProperty.all(Colors.white),
+                backgroundColor: WidgetStateProperty.all(t.surface),
               ),
               menuChildren: [
                 MenuItemButton(
@@ -127,7 +128,7 @@ class BackupFilterButton extends HookConsumerWidget {
                     ],
                   ),
                 ),
-                const Divider(height: 1, color: Colors.black),
+                Divider(height: 1, color: t.border),
                 ...folders.map((folder) {
                   final isSelected = selectedFolders.contains(folder);
 
@@ -149,9 +150,10 @@ class BackupFilterButton extends HookConsumerWidget {
                     child: Row(
                       spacing: 8,
                       children: [
-                        Icon(isSelected
-                            ? Icons.check_box
-                            : Icons.check_box_outline_blank),
+                        Icon(
+                          isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+                          color: isSelected ? t.accent : t.textSecondary,
+                        ),
                         Expanded(
                           child: Text(
                             folder,
@@ -180,12 +182,12 @@ class BackupFilterButton extends HookConsumerWidget {
                   : Colors.transparent,
             ),
             style: ButtonStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.white),
-              foregroundColor: WidgetStateProperty.all(Colors.black),
-              iconColor: WidgetStateProperty.all(Colors.black),
+              backgroundColor: WidgetStateProperty.all(t.surface),
+              foregroundColor: WidgetStateProperty.all(t.textPrimary),
+              iconColor: WidgetStateProperty.all(t.textPrimary),
             ),
             menuStyle: MenuStyle(
-              backgroundColor: WidgetStateProperty.all(Colors.white),
+              backgroundColor: WidgetStateProperty.all(t.surface),
             ),
             menuChildren: [
               MenuItemButton(
@@ -210,7 +212,7 @@ class BackupFilterButton extends HookConsumerWidget {
                   ],
                 ),
               ),
-              const Divider(height: 1, color: Colors.black),
+              Divider(height: 1, color: t.border),
               ...BackupMatchStatusEnum.values.map((status) {
                 final isSelected = selectedMatchStatuses.contains(status);
 

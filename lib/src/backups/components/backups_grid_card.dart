@@ -7,6 +7,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart'
     show HookConsumerWidget, WidgetRef;
 import 'package:path/path.dart' as p;
 import 'package:tts_mod_vault/src/ui/ui.dart' show AppTooltip;
+import 'package:tts_mod_vault/src/state/provider.dart' show appThemeDataProvider;
 import 'package:tts_mod_vault/src/state/backup/models/existing_backup_model.dart'
     show ExistingBackup;
 import 'package:tts_mod_vault/src/utils.dart'
@@ -20,6 +21,7 @@ class BackupsGridCard extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isHovered = useState(false);
+    final t = ref.watch(appThemeDataProvider);
 
     final matchingModImagePath = useMemoized(() {
       if (backup.matchingModFilepath == null) return null;
@@ -66,7 +68,7 @@ class BackupsGridCard extends HookConsumerWidget {
           decoration: BoxDecoration(
             border: Border.all(
               width: 4,
-              color: isHovered.value ? Colors.white : Colors.transparent,
+              color: isHovered.value ? t.borderHighlight : Colors.transparent,
             ),
           ),
           child: ClipRect(

@@ -52,34 +52,41 @@ class TopNavBar extends ConsumerWidget {
             ),
           ),
           const SizedBox(width: 16),
-          // Type tabs (Mods / Saves / SavedObjects) — only on Mods page
-          if (selectedPage == AppPage.mods) ...[
-            _TypeTab(
-              label: 'Mods',
-              count: modsCount,
-              active: selectedModType == ModTypeEnum.mod,
-              onTap: () => ref.read(selectedModTypeProvider.notifier).state =
-                  ModTypeEnum.mod,
-            ),
+          // Type tabs — always visible; clicking navigates to Mods page + type
+          _TypeTab(
+            label: 'Mods',
+            count: modsCount,
+            active: selectedPage == AppPage.mods &&
+                selectedModType == ModTypeEnum.mod,
+            onTap: () {
+              ref.read(selectedPageProvider.notifier).state = AppPage.mods;
+              ref.read(selectedModTypeProvider.notifier).state = ModTypeEnum.mod;
+            },
+          ),
+          const SizedBox(width: 4),
+          _TypeTab(
+            label: 'Saves',
+            count: savesCount,
+            active: selectedPage == AppPage.mods &&
+                selectedModType == ModTypeEnum.save,
+            onTap: () {
+              ref.read(selectedPageProvider.notifier).state = AppPage.mods;
+              ref.read(selectedModTypeProvider.notifier).state = ModTypeEnum.save;
+            },
+          ),
+          if (showSavedObjects) ...[
             const SizedBox(width: 4),
             _TypeTab(
-              label: 'Saves',
-              count: savesCount,
-              active: selectedModType == ModTypeEnum.save,
-              onTap: () => ref.read(selectedModTypeProvider.notifier).state =
-                  ModTypeEnum.save,
+              label: 'Saved Objects',
+              count: savedObjectsCount,
+              active: selectedPage == AppPage.mods &&
+                  selectedModType == ModTypeEnum.savedObject,
+              onTap: () {
+                ref.read(selectedPageProvider.notifier).state = AppPage.mods;
+                ref.read(selectedModTypeProvider.notifier).state =
+                    ModTypeEnum.savedObject;
+              },
             ),
-            if (showSavedObjects) ...[
-              const SizedBox(width: 4),
-              _TypeTab(
-                label: 'Saved Objects',
-                count: savedObjectsCount,
-                active: selectedModType == ModTypeEnum.savedObject,
-                onTap: () =>
-                    ref.read(selectedModTypeProvider.notifier).state =
-                        ModTypeEnum.savedObject,
-              ),
-            ],
           ],
           // Backups page tab
           if (backupsDir.isNotEmpty) ...[
