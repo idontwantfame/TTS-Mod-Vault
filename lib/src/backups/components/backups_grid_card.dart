@@ -85,7 +85,7 @@ class BackupsGridCard extends HookConsumerWidget {
 
                 if (!imageExists)
                   Container(
-                    color: Colors.grey[850],
+                    color: t.surfaceElevated,
                     alignment: Alignment.center,
                     child: const Icon(
                       Icons.folder_zip_outlined,
