@@ -1,5 +1,19 @@
 # Changelog
 
+## v3.5.1
+
+### Bug fixes & polish
+
+- **Backups tab navigation** — Mods / Saves / Saved Objects tabs now always visible; clicking any of them while on the Backups page navigates back to the correct mod type
+- **Backups toolbar** — removed the redundant "Backups" label; Sort and Filter on the left, count in the middle, Search on the right — consistent with the Mods page toolbar
+- **Backups list item** — completely redesigned to match Mods list style: compact 40 px thumbnail, 13 px title, 11 px muted subtitle with asset count / file size / date, import-status icon on the right
+- **Backups dropdowns** — Sort and Filter menus now fully themed (was hardcoded white/black)
+- **Grid card selection border** — selected card uses `accent`, hovered card uses `borderHighlight` (was hardcoded white)
+- **Full theme pass across 33 files** — eliminated all remaining `Colors.white`, `Colors.black`, and `Colors.grey` hardcoded colors; every UI element now uses `AppThemeData` tokens
+- **Dead code removed** — deleted `sidebar.dart` and `log_panel.dart` (replaced by TopNavBar and LoggingConsole in v3.5.0)
+
+---
+
 ## v3.5.0
 
 ### UI rework
