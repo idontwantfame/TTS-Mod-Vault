@@ -55,9 +55,9 @@ class BackupSortButton extends HookConsumerWidget {
             return MenuItemButton(
               closeOnActivate: true,
               style: MenuItemButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                iconColor: Colors.black,
+                backgroundColor: t.surface,
+                foregroundColor: t.textPrimary,
+                iconColor: t.textSecondary,
               ),
               child: Row(
                 spacing: 8,

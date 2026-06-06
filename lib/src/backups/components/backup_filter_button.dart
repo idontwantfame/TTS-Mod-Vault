@@ -94,7 +94,7 @@ class BackupFilterButton extends HookConsumerWidget {
               leadingIcon: Icon(
                 Icons.check,
                 color: selectedFolders.isNotEmpty
-                    ? Colors.black
+                    ? t.accent
                     : Colors.transparent,
               ),
               style: ButtonStyle(
@@ -109,9 +109,9 @@ class BackupFilterButton extends HookConsumerWidget {
                 MenuItemButton(
                   closeOnActivate: false,
                   style: MenuItemButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    iconColor: Colors.black,
+                    backgroundColor: t.surface,
+                    foregroundColor: t.textPrimary,
+                    iconColor: t.textSecondary,
                   ),
                   onPressed: () =>
                       backupSortAndFilterNotifier.clearFilteredFolders(),
@@ -135,9 +135,9 @@ class BackupFilterButton extends HookConsumerWidget {
                   return MenuItemButton(
                     closeOnActivate: false,
                     style: MenuItemButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: Colors.black,
-                      iconColor: Colors.black,
+                      backgroundColor: t.surface,
+                      foregroundColor: t.textPrimary,
+                      iconColor: t.textSecondary,
                     ),
                     onPressed: () {
                       if (isSelected) {
@@ -178,7 +178,7 @@ class BackupFilterButton extends HookConsumerWidget {
             leadingIcon: Icon(
               Icons.check,
               color: selectedMatchStatuses.isNotEmpty
-                  ? Colors.black
+                  ? t.accent
                   : Colors.transparent,
             ),
             style: ButtonStyle(
@@ -193,9 +193,9 @@ class BackupFilterButton extends HookConsumerWidget {
               MenuItemButton(
                 closeOnActivate: false,
                 style: MenuItemButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  iconColor: Colors.black,
+                  backgroundColor: t.surface,
+                  foregroundColor: t.textPrimary,
+                  iconColor: t.textSecondary,
                 ),
                 onPressed: () =>
                     backupSortAndFilterNotifier.clearFilteredMatchStatuses(),
@@ -219,9 +219,9 @@ class BackupFilterButton extends HookConsumerWidget {
                 return MenuItemButton(
                   closeOnActivate: false,
                   style: MenuItemButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    iconColor: Colors.black,
+                    backgroundColor: t.surface,
+                    foregroundColor: t.textPrimary,
+                    iconColor: t.textSecondary,
                   ),
                   onPressed: () {
                     if (isSelected) {

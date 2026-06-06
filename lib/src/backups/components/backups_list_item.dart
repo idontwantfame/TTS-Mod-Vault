@@ -66,7 +66,7 @@ class BackupsListItem extends HookConsumerWidget {
         },
         child: Card(
           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          color: Colors.grey[850],
+          color: t.surface,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(4),
             side: BorderSide(
@@ -91,7 +91,7 @@ class BackupsListItem extends HookConsumerWidget {
                 Container(
                   width: 64,
                   height: 64,
-                  color: Colors.grey,
+                  color: t.surfaceElevated,
                   child: const Icon(Icons.folder_zip_outlined, size: 40),
                 ),
 
