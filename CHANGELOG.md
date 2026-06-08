@@ -1,5 +1,22 @@
 # Changelog
 
+## v3.5.3
+
+### Features from upstream
+
+- **Save as Mod** — new context menu option on Saves to promote them to a Mod
+- **Set backup folder as default** — checkbox in backup dialogs to save the chosen folder as your default without opening Settings
+- **Check for existing JSON on import** — backup import now detects when the JSON file already exists and lets you choose which version to keep
+- **Improved link detection** — better detection of asset URLs embedded inside Lua scripts
+
+### Other
+
+- Removed unused analytics service dependency
+- Updated `.desktop` file description
+- Optimised app icon PNG files
+
+---
+
 ## v3.5.2
 
 ### Bug fixes
