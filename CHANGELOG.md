@@ -1,5 +1,13 @@
 # Changelog
 
+## v3.5.2
+
+### Bug fixes
+
+- **Proxy test button** — "Test connection" now tests the URL currently in the text field without saving it first, so you can verify a proxy before committing to it
+
+---
+
 ## v3.5.1
 
 ### Bug fixes & polish
