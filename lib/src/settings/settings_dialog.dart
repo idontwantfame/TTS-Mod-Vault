@@ -1193,7 +1193,7 @@ class SettingsNetworkColumn extends HookConsumerWidget {
                         proxyTestResult.value = null;
                         final result = await ref
                             .read(downloadProvider.notifier)
-                            .testConnection();
+                            .testConnectionWithUrl(proxyTextFieldController.text);
                         proxyTestResult.value = result;
                         proxyTesting.value = false;
                       },

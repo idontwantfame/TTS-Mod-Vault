@@ -145,21 +145,37 @@ class DownloadNotifier extends StateNotifier<DownloadState> {
     }
   }
 
-  Future<String> testConnection() async {
+  /// Tests connectivity using [proxyUrl] without saving it.
+  /// Creates a temporary Dio instance so the live proxy config is untouched.
+  Future<String> testConnectionWithUrl(String proxyUrl) async {
+    final testDio = Dio(BaseOptions(
+      connectTimeout: const Duration(seconds: 10),
+      sendTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 10),
+    ));
+    testDio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+        final url = proxyUrl.trim();
+        if (url.isNotEmpty) {
+          final pacEntry = _proxyToPacEntry(url);
+          client.findProxy = (uri) => pacEntry;
+        }
+        return client;
+      },
+    );
     try {
-      final response = await dio.get(
+      final response = await testDio.get(
         'https://steamcommunity.com',
-        options: Options(
-          sendTimeout: const Duration(seconds: 10),
-          receiveTimeout: const Duration(seconds: 10),
-          validateStatus: (s) => s != null && s < 600,
-        ),
+        options: Options(validateStatus: (s) => s != null && s < 600),
       );
-      final proxy = ref.read(settingsProvider).proxyUrl;
-      final via = proxy.isNotEmpty ? ' via proxy $proxy' : '';
+      final url = proxyUrl.trim();
+      final via = url.isNotEmpty ? ' via $url' : ' (no proxy)';
       return 'OK — ${response.statusCode}$via';
     } catch (e) {
       return 'Failed: $e';
+    } finally {
+      testDio.close();
     }
   }
 
